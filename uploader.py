@@ -141,7 +141,7 @@ class Command:
     def do_preparation(self):
         try:
             element = self.wait.until(
-                EC.presence_of_element_located(
+                EC.visibility_of_element_located(
                     (By.ID, 'lm-tip-got-it-btn')
                 )
             )
