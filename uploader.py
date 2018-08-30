@@ -131,12 +131,24 @@ class Command:
         )
         element.send_keys(file)
 
-        element = self.wait.until(
-            EC.visibility_of_element_located(
-                (By.ID, 'lm-conf-changes-btn-submit')
+        try:
+            element = self.wait.until(
+                EC.visibility_of_element_located(
+                    (By.ID, 'lm-conf-changes-btn-submit')
+                )
             )
-        )
-        element.click()
+            element.click()
+        except Exception:
+            try:
+                element = self.wait.until(
+                    EC.presence_of_element_located(
+                        (By.ID, 'lm-conf-changes-btn-got-it')
+                    )
+                )
+                element.click()
+                raise Exception('File uploaded already.')
+            except Exception:
+                pass
 
     def do_preparation(self):
         try:
