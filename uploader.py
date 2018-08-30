@@ -5,6 +5,9 @@ import time
 
 from openpyxl import load_workbook
 from selenium import webdriver
+from selenium.common.exceptions import (
+    TimeoutException, UnexpectedAlertPresentException
+)
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -87,7 +90,7 @@ class Command:
             self.wait.until(
                 EC.url_contains('https://myaccount.google.com/')
             )
-        except Exception:
+        except TimeoutException:
             element = self.wait.until(
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[@data-challengetype="12"]')
@@ -121,7 +124,7 @@ class Command:
                 '//md-dialog-actions/button'
             )
             element.click()
-        except Exception:
+        except TimeoutException:
             pass
 
         element = self.wait.until(
@@ -138,7 +141,7 @@ class Command:
                 )
             )
             element.click()
-        except Exception:
+        except TimeoutException:
             try:
                 element = self.wait.until(
                     EC.presence_of_element_located(
@@ -147,7 +150,7 @@ class Command:
                 )
                 element.click()
                 raise Exception('File uploaded already.')
-            except Exception:
+            except TimeoutException:
                 pass
 
             raise Exception('Submit button not found.')
@@ -160,7 +163,7 @@ class Command:
                 )
             )
             element.click()
-        except Exception:
+        except TimeoutException:
             pass
 
         # Change listing view
@@ -283,14 +286,13 @@ class Command:
         )
         element.click()
 
-        self.driver.get(
-            'https://www.google.com/'
-        )
         try:
+            self.driver.get(
+                'https://www.google.com/'
+            )
+        except UnexpectedAlertPresentException:
             alert = self.driver.switch_to_alert()
             alert.accept()
-        except Exception:
-            pass
 
     def handle(self, *args, **options):
         file_index = 0
