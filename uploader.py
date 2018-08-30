@@ -12,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
+API_ROOT = 'https://matrix.cubo.pe/en/api/'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -230,6 +231,7 @@ class Command:
             phone = item['row'].find_element_by_xpath(
                 '//div[@flex-gt-sm="25"]/div[@class="lm-listing-data"]'
             ).text.strip()
+            print(name, phone)
         else:
             if checked == 'false':
                 checkbox.click()
