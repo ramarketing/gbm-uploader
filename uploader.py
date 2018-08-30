@@ -186,7 +186,7 @@ class Command:
             )
             element.click()
             print('Dismissing promo')
-        except ElementNotVisibleException:
+        except Exception:
             print('Promo not found.')
 
         print('End do_preparation')
