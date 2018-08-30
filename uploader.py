@@ -168,11 +168,22 @@ class Command:
 
         # Change listing view
         element = self.wait.until(
-            EC.element_to_be_clickable(
+            EC.presence_of_element_located(
                 (By.XPATH, '//button[@aria-label="Sort locations"]')
             )
         )
         element.click()
+
+        try:
+            element = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.ID, 'lm-list-view-promo-use-list-btn')
+                )
+            )
+            element.click()
+        except ElementNotVisibleException:
+            pass
+
         time.sleep(5)
 
     def do_verification(self):
