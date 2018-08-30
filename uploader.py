@@ -134,9 +134,11 @@ class Command:
         )
         element.send_keys(file)
 
+        time.sleep(WAIT_TIME)
+
         try:
             element = self.wait.until(
-                EC.presence_of_element_located(
+                EC.visibility_of_element_located(
                     (By.ID, 'lm-conf-changes-btn-submit')
                 )
             )
@@ -144,7 +146,7 @@ class Command:
         except TimeoutException:
             try:
                 element = self.wait.until(
-                    EC.presence_of_element_located(
+                    EC.visibility_of_element_located(
                         (By.ID, 'lm-conf-changes-btn-got-it')
                     )
                 )
