@@ -206,10 +206,12 @@ class Command:
             return self.driver.quit()
 
         for item in self.active_list:
+            print('Opening new tab')
             element = item['element'].find_element_by_css_selector(
                 'div.lm-listing-data.lm-pointer'
             )
             element.click()
+            print('Tab opened')
 
         for i in reversed(range(1, len(self.driver.window_handles))):
             self.driver.switch_to_window(self.driver.window_handles[i])
@@ -226,8 +228,10 @@ class Command:
 
             self.active_list[i - 1]['is_success'] = True
             self.driver.close()
+        print('End do_verification')
 
     def do_verification_row(self, row):
+        print('Start do_verification_row')
         ActionChains(self.driver) \
             .move_to_element(row) \
             .perform()
@@ -235,7 +239,7 @@ class Command:
         status = row.find_element_by_css_selector(
             'div.lm-statusColStatus'
         ).text.strip().upper()
-
+        print('Status', status)
         if status == 'PUBLISHED':
             return
 
@@ -243,6 +247,7 @@ class Command:
             'div.lm-action-col'
         )
         action = element.text.strip().upper()
+        print('Action', action)
 
         if action == 'GET VERIFIED':
             self.active_list.append(dict(
@@ -251,10 +256,14 @@ class Command:
                 is_success=False,
             ))
         else:
+            print('Clicking checkbox')
             checkbox = row.find_element_by_xpath('//md-checkbox')
             checked = checkbox.get_attribute('aria-checked')
             if checked == 'false':
                 checkbox.click()
+                print('Checkbox clicked')
+            print('Checkbox not clicked')
+        print('End do_verification_row')
 
     def do_verify_validation_method(self, item, login):
         checkbox = item['row'].find_element_by_xpath(
