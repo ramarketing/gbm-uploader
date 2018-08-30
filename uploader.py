@@ -164,7 +164,7 @@ class Command:
             )
             element.click()
         except ElementNotVisibleException:
-            print("Clickable button not found.")
+            pass
 
         # Change listing view
         element = self.wait.until(
@@ -184,9 +184,11 @@ class Command:
         except ElementNotVisibleException:
             pass
 
-        time.sleep(5)
+        print('Ending do_preparation')
+        time.sleep(WAIT_TIME)
 
     def do_verification(self):
+        print('Starting do_verification')
         self.active_list = list()
         rows = self.driver.find_elements_by_css_selector(
             'div.lm-list-data-row'
