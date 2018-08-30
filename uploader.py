@@ -14,6 +14,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 API_ROOT = 'https://matrix.cubo.pe/en/api/'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+WAIT_TIME = 10
 
 
 class Command:
@@ -131,7 +132,7 @@ class Command:
         element.send_keys(file)
 
         element = self.wait.until(
-            EC.presence_of_element_located(
+            EC.visibility_of_element_located(
                 (By.ID, 'lm-conf-changes-btn-submit')
             )
         )
@@ -284,7 +285,7 @@ class Command:
             self.driver = webdriver.Chrome(
                 os.path.join(BASE_DIR, 'chromedriver')
             )
-            self.wait = WebDriverWait(self.driver, 8)
+            self.wait = WebDriverWait(self.driver, WAIT_TIME)
             self.driver.get('https://accounts.google.com/ServiceLogin')
             self.do_login(
                 login['email'],
