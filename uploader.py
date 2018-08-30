@@ -49,7 +49,12 @@ class Command:
         if not files:
             raise Exception("Files not found.")
 
-        return [os.path.join(folder, filename) for filename in filenames]
+        files = list()
+        for filename in filenames:
+            if not filename.endswith('.csv'):
+                continue
+            files.append(filename)
+        return files
 
     def get_login_list(self, file=None):
         file = file or self.file_login_list
