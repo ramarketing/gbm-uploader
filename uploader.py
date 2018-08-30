@@ -6,7 +6,7 @@ import time
 from openpyxl import load_workbook
 from selenium import webdriver
 from selenium.common.exceptions import (
-    TimeoutException, UnexpectedAlertPresentException
+    ElementNotVisibleException, UnexpectedAlertPresentException
 )
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -90,7 +90,7 @@ class Command:
             self.wait.until(
                 EC.url_contains('https://myaccount.google.com/')
             )
-        except TimeoutException:
+        except Exception:
             element = self.wait.until(
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[@data-challengetype="12"]')
@@ -124,7 +124,7 @@ class Command:
                 '//md-dialog-actions/button'
             )
             element.click()
-        except TimeoutException:
+        except ElementNotVisibleException:
             pass
 
         element = self.wait.until(
@@ -143,7 +143,7 @@ class Command:
                 )
             )
             element.click()
-        except TimeoutException:
+        except ElementNotVisibleException:
             try:
                 element = self.wait.until(
                     EC.visibility_of_element_located(
@@ -152,7 +152,7 @@ class Command:
                 )
                 element.click()
                 raise Exception('File uploaded already.')
-            except TimeoutException:
+            except ElementNotVisibleException:
                 pass
 
             raise Exception('Submit button not found.')
@@ -165,7 +165,7 @@ class Command:
                 )
             )
             element.click()
-        except TimeoutException:
+        except ElementNotVisibleException:
             pass
 
         # Change listing view
