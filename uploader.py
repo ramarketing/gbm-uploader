@@ -150,6 +150,8 @@ class Command:
             except Exception:
                 pass
 
+            raise Exception('Submit button not found.')
+
     def do_preparation(self):
         try:
             element = self.wait.until(
@@ -321,7 +323,7 @@ class Command:
 
                     self.do_cleanup()
                 except Exception as err:
-                    raise Exception("An error has occurred %s" % err)
+                    print("An error has occurred %s" % err)
                 finally:
                     print('Successfully uploaded file "%s"' % file)
 
