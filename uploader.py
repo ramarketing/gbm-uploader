@@ -130,15 +130,12 @@ class Command:
         )
         element.send_keys(file)
 
-        try:
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.ID, 'lm-conf-changes-btn-submit')
-                )
+        element = self.wait.until(
+            EC.presence_of_element_located(
+                (By.ID, 'lm-conf-changes-btn-submit')
             )
-            element.click()
-        except Exception:
-            pass
+        )
+        element.click()
 
     def do_preparation(self):
         try:
