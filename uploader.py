@@ -134,8 +134,6 @@ class Command:
         )
         element.send_keys(file)
 
-        time.sleep(WAIT_TIME)
-
         try:
             element = self.wait.until(
                 EC.visibility_of_element_located(
@@ -166,7 +164,7 @@ class Command:
             )
             element.click()
         except ElementNotVisibleException:
-            pass
+            print("Clickable button not found.")
 
         # Change listing view
         element = self.wait.until(
