@@ -156,6 +156,7 @@ class Command:
             raise Exception('Submit button not found.')
 
     def do_preparation(self):
+        print('Start do_preparation')
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -163,16 +164,19 @@ class Command:
                 )
             )
             element.click()
+            print('Click "Got it"')
         except ElementNotVisibleException:
-            pass
+            print('"Got it" not found')
 
         # Change listing view
+        print('Change to list view')
         element = self.wait.until(
             EC.presence_of_element_located(
                 (By.XPATH, '//button[@aria-label="Sort locations"]')
             )
         )
         element.click()
+        print('Change to list view ended')
 
         try:
             element = self.wait.until(
@@ -181,14 +185,15 @@ class Command:
                 )
             )
             element.click()
+            print('Dismissing promo')
         except ElementNotVisibleException:
-            pass
+            print('Promo not found.')
 
-        print('Ending do_preparation')
+        print('End do_preparation')
         time.sleep(WAIT_TIME)
 
     def do_verification(self):
-        print('Starting do_verification')
+        print('Start do_verification')
         self.active_list = list()
         rows = self.driver.find_elements_by_css_selector(
             'div.lm-list-data-row'
