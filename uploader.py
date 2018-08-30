@@ -78,7 +78,7 @@ class Command:
         element.send_keys(email + Keys.RETURN)
 
         element = self.wait.until(
-            EC.visibility_of_element_located((By.NAME, 'password'))
+            EC.presence_of_element_located((By.NAME, 'password'))
         )
         element.send_keys(password + Keys.RETURN)
 
@@ -95,7 +95,7 @@ class Command:
             )
             element.click()
             element = self.wait.until(
-                EC.visibility_of_element_located(
+                EC.presence_of_element_located(
                     (By.NAME, 'knowledgePreregisteredEmailResponse')
                 )
             )
@@ -133,7 +133,7 @@ class Command:
 
         try:
             element = self.wait.until(
-                EC.visibility_of_element_located(
+                EC.presence_of_element_located(
                     (By.ID, 'lm-conf-changes-btn-submit')
                 )
             )
@@ -155,7 +155,7 @@ class Command:
     def do_preparation(self):
         try:
             element = self.wait.until(
-                EC.visibility_of_element_located(
+                EC.presence_of_element_located(
                     (By.ID, 'lm-tip-got-it-btn')
                 )
             )
