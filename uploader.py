@@ -53,7 +53,7 @@ class Command:
         for filename in filenames:
             if not filename.endswith('.csv'):
                 continue
-            files.append(filename)
+            files.append(os.path.join(folder, filename))
         return files
 
     def get_login_list(self, file=None):
