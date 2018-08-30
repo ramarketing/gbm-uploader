@@ -1,5 +1,5 @@
 import os
-# import requests
+import requests
 import sys
 import time
 
@@ -26,6 +26,10 @@ class Command:
 
     def __init__(self, *args):
         username, password = args
+        self.API_TOKEN = self.user_login(
+            username=username,
+            password=password
+        )
         self.file_list = self.get_file_list()
         self.login_list = self.get_login_list()
 
@@ -120,15 +124,16 @@ class Command:
             )
         )
         element.send_keys(file)
-        print('File added')
 
-        element = self.wait.until(
-            EC.presence_of_element_located(
-                (By.ID, 'lm-conf-changes-btn-submit')
+        try:
+            element = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.ID, 'lm-conf-changes-btn-submit')
+                )
             )
-        )
-        element.click()
-        print('Clicked')
+            element.click()
+        except Exception:
+            pass
 
     def do_preparation(self):
         try:
@@ -231,7 +236,7 @@ class Command:
             phone = item['row'].find_element_by_xpath(
                 '//div[@flex-gt-sm="25"]/div[@class="lm-listing-data"]'
             ).text.strip()
-            print(name, phone)
+            self.report_success(name=name, phone=phone, **login)
         else:
             if checked == 'false':
                 checkbox.click()
@@ -307,6 +312,23 @@ class Command:
 
                 file_index += 1
             self.driver.quit()
+
+    def user_login(self, **kwargs):
+        url = API_ROOT + 'account/login/'
+        try:
+            r = requests.post(url, data=kwargs).json()
+            return r['token']
+        except Exception:
+            raise Exception('Invalid credentials')
+
+    def report_success(self, **kwargs):
+        url = API_ROOT + 'mixer/business/success-from-google/'
+        headers = {'Authorization': 'Token {}'.format(self.API_TOKEN)}
+        try:
+            r = requests.post(url, headers=headers, data=kwargs).json()
+            return r['msg']
+        except Exception as e:
+            raise Exception(e)
 
 
 def main(args):
