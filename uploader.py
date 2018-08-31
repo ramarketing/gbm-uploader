@@ -328,13 +328,14 @@ class Command:
         )
         self.driver.execute_script("arguments[0].click();", element)
 
+        self.driver.get(
+            'https://www.google.com/'
+        )
         try:
-            self.driver.get(
-                'https://www.google.com/'
-            )
-        except UnexpectedAlertPresentException:
             alert = self.driver.switch_to_alert()
             alert.accept()
+        except Exception:
+            pass
 
         print('End do_cleanup')
 
