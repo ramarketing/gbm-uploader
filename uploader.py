@@ -173,13 +173,12 @@ class Command:
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
-                    (By.XPATH, '//button[@aria-label="Sort locations"]')
+                    (By.XPATH, '//button[@aria-label="List view"]')
                 )
             )
             element.click()
         except Exception:
-            print("Element not found, pausing 90 seconds for debug")
-            time.sleep(90)
+            pass
         print('Change to list view ended')
 
         try:
