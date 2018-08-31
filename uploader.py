@@ -155,6 +155,8 @@ class Command:
 
     def do_preparation(self):
         print('Start do_preparation')
+
+        time.sleep(5)
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -168,7 +170,6 @@ class Command:
 
         # Change listing view
         print('Change to list view')
-        time.sleep(120)
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -179,7 +180,6 @@ class Command:
         except Exception:
             pass
 
-        time.sleep(120)
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
