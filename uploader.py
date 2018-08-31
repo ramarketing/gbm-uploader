@@ -170,12 +170,16 @@ class Command:
 
         # Change listing view
         print('Change to list view')
-        element = self.wait.until(
-            EC.presence_of_element_located(
-                (By.XPATH, '//button[@aria-label="Sort locations"]')
+        try:
+            element = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.XPATH, '//button[@aria-label="Sort locations"]')
+                )
             )
-        )
-        element.click()
+            element.click()
+        except Exception:
+            print("Element not found, pausing 90 seconds for debug")
+            time.sleep(90)
         print('Change to list view ended')
 
         try:
@@ -198,6 +202,10 @@ class Command:
         rows = self.driver.find_elements_by_css_selector(
             'div.lm-list-data-row'
         )
+
+        ActionChains(self.driver) \
+            .move_to_element(rows['-1']) \
+            .perform()
 
         for row in rows:
             self.do_verification_row(row)
