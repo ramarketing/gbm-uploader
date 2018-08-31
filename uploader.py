@@ -5,9 +5,7 @@ import time
 
 from openpyxl import load_workbook
 from selenium import webdriver
-from selenium.common.exceptions import (
-    ElementNotVisibleException, UnexpectedAlertPresentException
-)
+from selenium.common.exceptions import ElementNotVisibleException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -170,6 +168,7 @@ class Command:
 
         # Change listing view
         print('Change to list view')
+        time.sleep(120)
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -180,6 +179,7 @@ class Command:
         except Exception:
             pass
 
+        time.sleep(120)
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
