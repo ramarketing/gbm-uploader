@@ -173,6 +173,16 @@ class Command:
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
+                    (By.XPATH, '//button[@data-ng-click="targetOnClick()"]')
+                )
+            )
+            element.click()
+        except Exception:
+            pass
+
+        try:
+            element = self.wait.until(
+                EC.presence_of_element_located(
                     (By.XPATH, '//button[@aria-label="List view"]')
                 )
             )
