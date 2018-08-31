@@ -383,7 +383,9 @@ class Command:
         url = API_ROOT + 'mixer/business/success-from-google/'
         headers = {'Authorization': 'Token {}'.format(self.API_TOKEN)}
         try:
+            print('Kwargs', kwargs)
             r = requests.post(url, headers=headers, data=kwargs).json()
+            print('R', r)
             return r['msg']
         except Exception as e:
             raise Exception(e)
