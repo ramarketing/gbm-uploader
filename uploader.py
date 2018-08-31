@@ -167,14 +167,12 @@ class Command:
         except Exception:
             print('"Got it" not found')
 
-        time.sleep(300)
-
         # Change listing view
         print('Change to list view')
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
-                    (By.XPATH, '//button[@data-ng-click="targetOnClick()"]')
+                    (By.XPATH, '//div[@class="lm-tipHighlight"]/button')
                 )
             )
             element.click()
