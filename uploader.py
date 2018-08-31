@@ -273,6 +273,7 @@ class Command:
         print('End do_verification_row')
 
     def do_verify_validation_method(self, item, login):
+        print('Start do_verify_validation_method')
         checkbox = item['row'].find_element_by_xpath(
             '//md-checkbox'
         )
@@ -280,7 +281,7 @@ class Command:
 
         if item['is_success']:
             if checked == 'true':
-                checkbox.click()
+                self.driver.execute_script("arguments[0].click();", checkbox)
 
             name = item['row'].find_element_by_xpath(
                 '//div[@flex-gt-sm="35"]/div[@class="lm-listing-data"]'
@@ -293,15 +294,17 @@ class Command:
             self.report_success(name=name, phone=phone, **login)
         else:
             if checked == 'false':
-                checkbox.click()
+                self.driver.execute_script("arguments[0].click();", checkbox)
+        print('End do_verify_validation_method')
 
     def do_cleanup(self):
+        print('Start do_cleanup')
         element = self.wait.until(
             EC.element_to_be_clickable(
                 (By.ID, 'lm-title-bars-see-options-btn')
             )
         )
-        element.click()
+        self.driver.execute_script("arguments[0].click();", element)
 
         time.sleep(3)
 
@@ -310,7 +313,7 @@ class Command:
                 (By.ID, 'lm-title-bars-remove-btn')
             )
         )
-        element.click()
+        self.driver.execute_script("arguments[0].click();", element)
 
         element = self.wait.until(
             EC.element_to_be_clickable((
@@ -318,7 +321,7 @@ class Command:
                 'lm-confirm-dialog-list-selection-remove-selected-2-btn'
             ))
         )
-        element.click()
+        self.driver.execute_script("arguments[0].click();", element)
 
         try:
             self.driver.get(
@@ -327,6 +330,8 @@ class Command:
         except UnexpectedAlertPresentException:
             alert = self.driver.switch_to_alert()
             alert.accept()
+
+        print('End do_cleanup')
 
     def handle(self, *args, **options):
         file_index = 0
@@ -375,6 +380,7 @@ class Command:
             raise Exception('Invalid credentials')
 
     def report_success(self, **kwargs):
+        print('Start report_success')
         url = API_ROOT + 'mixer/business/success-from-google/'
         headers = {'Authorization': 'Token {}'.format(self.API_TOKEN)}
         try:
@@ -382,6 +388,7 @@ class Command:
             return r['msg']
         except Exception as e:
             raise Exception(e)
+        print('Start report_success')
 
 
 def main(args):
