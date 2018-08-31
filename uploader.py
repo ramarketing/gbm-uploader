@@ -203,7 +203,7 @@ class Command:
         )
 
         ActionChains(self.driver) \
-            .move_to_element(rows['-1']) \
+            .move_to_element(rows[-1]) \
             .perform()
 
         for row in rows:
