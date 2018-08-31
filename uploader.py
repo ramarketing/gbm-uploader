@@ -156,17 +156,18 @@ class Command:
     def do_preparation(self):
         print('Start do_preparation')
 
-        time.sleep(5)
         try:
             element = self.wait.until(
-                EC.presence_of_element_located(
+                EC.visibility_of_element_located(
                     (By.ID, 'lm-tip-got-it-btn')
                 )
             )
             element.click()
             print('Click "Got it"')
-        except ElementNotVisibleException:
+        except Exception:
             print('"Got it" not found')
+
+        time.sleep(300)
 
         # Change listing view
         print('Change to list view')
