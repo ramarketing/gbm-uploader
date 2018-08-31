@@ -282,15 +282,21 @@ class Command:
             if checked == 'true':
                 self.driver.execute_script("arguments[0].click();", checkbox)
 
-            name = item['row'].find_element_by_xpath(
+            dataset = item['row'].find_element_by_xpath(
                 '//div[@flex-gt-sm="35"]/div[@class="lm-listing-data"]'
-            ).find_element_by_css_selector(
+            )
+            name = dataset.find_element_by_css_selector(
                 'div.lm-darkText'
+            ).text.strip()
+            address = dataset.find_element_by_css_selector(
+                'div.lm-listing-data-less-dark'
             ).text.strip()
             phone = item['row'].find_element_by_xpath(
                 '//div[@flex-gt-sm="25"]/div[@class="lm-listing-data"]'
             ).text.strip()
-            self.report_success(name=name, phone=phone, **login)
+            self.report_success(
+                name=name, address=address, phone=phone, **login
+            )
         else:
             if checked == 'false':
                 self.driver.execute_script("arguments[0].click();", checkbox)
