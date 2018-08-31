@@ -193,7 +193,6 @@ class Command:
             print('Promo not found.')
 
         print('End do_preparation')
-        time.sleep(WAIT_TIME)
 
     def do_verification(self):
         print('Start do_verification')
