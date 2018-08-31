@@ -217,7 +217,7 @@ class Command:
             element = item['element'].find_element_by_css_selector(
                 'div.lm-listing-data.lm-pointer'
             )
-            element.click()
+            self.driver.execute_script("arguments[0].click();", element)
             print('Tab opened')
 
         for i in reversed(range(1, len(self.driver.window_handles))):
