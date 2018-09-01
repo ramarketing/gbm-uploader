@@ -148,7 +148,6 @@ class Command:
         element.send_keys(file)
 
         print('Hold to check fields')
-        time.sleep(300)
 
         try:
             element = self.wait.until(
