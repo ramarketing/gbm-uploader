@@ -175,9 +175,9 @@ class Command:
                     (By.XPATH, '//div[@class="lm-tipHighlight"]/button')
                 )
             )
-            element.click()
-        except Exception:
-            pass
+            self.driver.execute_script("arguments[0].click();", element)
+        except Exception as e:
+            print('Error 1', e)
 
         try:
             element = self.wait.until(
@@ -185,9 +185,9 @@ class Command:
                     (By.XPATH, '//button[@aria-label="List view"]')
                 )
             )
-            element.click()
-        except Exception:
-            pass
+            self.driver.execute_script("arguments[0].click();", element)
+        except Exception as e:
+            print('Error 2', e)
         print('Change to list view ended')
 
         try:
