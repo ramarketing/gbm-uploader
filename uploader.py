@@ -121,9 +121,6 @@ class Command:
             'https://business.google.com/manage/?noredirect=1#/upload'
         )
 
-        print('Hold to check fields')
-        time.sleep(300)
-
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -135,15 +132,23 @@ class Command:
                 '//md-dialog-actions/button'
             )
             element.click()
-        except ElementNotVisibleException:
+        except Exception:
             pass
 
-        element = self.wait.until(
-            EC.presence_of_element_located(
-                (By.NAME, 'spreadsheet')
+        print('File', file)
+        try:
+            element = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.NAME, 'spreadsheet')
+                )
             )
-        )
+        except Exception:
+            print('Running exception')
+            element = self.driver.find_element_by_name('spreadsheet')
         element.send_keys(file)
+
+        print('Hold to check fields')
+        time.sleep(300)
 
         try:
             element = self.wait.until(
