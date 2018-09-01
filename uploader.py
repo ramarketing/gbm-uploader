@@ -284,7 +284,7 @@ class Command:
             checkbox = row.find_element_by_xpath('//md-checkbox')
             checked = checkbox.get_attribute('aria-checked')
             if checked == 'false':
-                checkbox.click()
+                self.driver.execute_script("arguments[0].click();", checkbox)
                 print('Checkbox clicked')
             print('Checkbox not clicked')
         print('End do_verification_row')
