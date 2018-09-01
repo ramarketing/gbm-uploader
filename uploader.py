@@ -162,23 +162,14 @@ class Command:
                     (By.ID, 'lm-tip-got-it-btn')
                 )
             )
-            element.click()
+            self.driver.execute_script("arguments[0].click();", element)
             print('Click "Got it"')
-        except Exception:
+        except Exception as e:
+            print('Error 0', e)
             print('"Got it" not found')
 
         # Change listing view
         print('Change to list view')
-        try:
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.XPATH, '//div[@class="lm-tipHighlight"]/button')
-                )
-            )
-            self.driver.execute_script("arguments[0].click();", element)
-        except Exception as e:
-            print('Error 1', e)
-
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -187,7 +178,7 @@ class Command:
             )
             self.driver.execute_script("arguments[0].click();", element)
         except Exception as e:
-            print('Error 2', e)
+            print('Error 1', e)
         print('Change to list view ended')
 
         try:
