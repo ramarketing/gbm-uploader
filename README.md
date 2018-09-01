@@ -16,7 +16,7 @@ cd gbm-uploader
 
 2. (Optional) Install and activate your `virtualenv`
 ```shell
-pip install vitualenv
+pip install virtualenv
 env\Scrips\activate
 ```
 
