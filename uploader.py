@@ -108,6 +108,16 @@ class Command:
 
     def do_upload(self, file):
         self.driver.get(
+            'https://www.google.com/'
+        )
+
+        try:
+            alert = self.driver.switch_to_alert()
+            alert.accept()
+        except Exception:
+            pass
+
+        self.driver.get(
             'https://business.google.com/manage/?noredirect=1#/upload'
         )
 
@@ -328,16 +338,6 @@ class Command:
             ))
         )
         self.driver.execute_script("arguments[0].click();", element)
-
-        self.driver.get(
-            'https://www.google.com/'
-        )
-        try:
-            alert = self.driver.switch_to_alert()
-            alert.accept()
-        except Exception:
-            pass
-
         print('End do_cleanup')
 
     def handle(self, *args, **options):
