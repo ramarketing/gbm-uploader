@@ -121,6 +121,9 @@ class Command:
             'https://business.google.com/manage/?noredirect=1#/upload'
         )
 
+        print('Hold to check fields')
+        time.sleep(300)
+
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
