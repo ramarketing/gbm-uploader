@@ -79,6 +79,8 @@ class Command:
         element = self.driver.find_element_by_id('identifierId')
         element.send_keys(email + Keys.RETURN)
 
+        time.sleep(1)
+
         element = self.wait.until(
             EC.presence_of_element_located((By.NAME, 'password'))
         )
