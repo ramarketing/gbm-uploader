@@ -86,6 +86,8 @@ class Command:
         )
         element.send_keys(password + Keys.RETURN)
 
+        time.sleep(1)
+
         # WARNING Check if needs to confirm their indentity
         try:
             self.wait.until(
