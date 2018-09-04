@@ -1,4 +1,5 @@
 import os
+import platform
 import requests
 import sys
 import time
@@ -135,7 +136,6 @@ class Command:
         except Exception:
             pass
 
-        print('File', file)
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -143,11 +143,9 @@ class Command:
                 )
             )
         except Exception:
-            print('Running exception')
+
             element = self.driver.find_element_by_name('spreadsheet')
         element.send_keys(file)
-
-        print('Hold to check fields')
 
         try:
             element = self.wait.until(
@@ -171,7 +169,6 @@ class Command:
             raise Exception('Submit button not found.')
 
     def do_preparation(self):
-        print('Start do_preparation')
 
         try:
             element = self.wait.until(
@@ -180,13 +177,10 @@ class Command:
                 )
             )
             self.driver.execute_script("arguments[0].click();", element)
-            print('Click "Got it"')
-        except Exception as e:
-            print('Error 0', e)
-            print('"Got it" not found')
 
-        # Change listing view
-        print('Change to list view')
+        except Exception as e:
+            pass
+
         try:
             element = self.wait.until(
                 EC.presence_of_element_located(
@@ -195,8 +189,7 @@ class Command:
             )
             self.driver.execute_script("arguments[0].click();", element)
         except Exception as e:
-            print('Error 1', e)
-        print('Change to list view ended')
+            pass
 
         try:
             element = self.wait.until(
@@ -205,15 +198,12 @@ class Command:
                 )
             )
             element.click()
-            print('Dismissing promo')
         except Exception:
-            print('Promo not found.')
+            pass
 
-        print('End do_preparation')
         time.sleep(WAIT_TIME)
 
     def do_verification(self):
-        print('Start do_verification')
         self.active_list = list()
         rows = self.driver.find_elements_by_css_selector(
             'div.lm-list-data-row'
@@ -230,12 +220,11 @@ class Command:
             return self.driver.quit()
 
         for item in self.active_list:
-            print('Opening new tab')
+
             element = item['element'].find_element_by_css_selector(
                 'div.lm-listing-data.lm-pointer'
             )
             self.driver.execute_script("arguments[0].click();", element)
-            print('Tab opened')
 
         for i in reversed(range(1, len(self.driver.window_handles))):
             self.driver.switch_to_window(self.driver.window_handles[i])
@@ -252,10 +241,8 @@ class Command:
 
             self.active_list[i - 1]['is_success'] = True
             self.driver.close()
-        print('End do_verification')
 
     def do_verification_row(self, row):
-        print('Start do_verification_row')
         ActionChains(self.driver) \
             .move_to_element(row) \
             .perform()
@@ -263,7 +250,6 @@ class Command:
         status = row.find_element_by_css_selector(
             'div.lm-statusColStatus'
         ).text.strip().upper()
-        print('Status', status)
         if status == 'PUBLISHED':
             return
 
@@ -271,7 +257,6 @@ class Command:
             'div.lm-action-col'
         )
         action = element.text.strip().upper()
-        print('Action', action)
 
         if action == 'GET VERIFIED':
             self.active_list.append(dict(
@@ -280,17 +265,13 @@ class Command:
                 is_success=False,
             ))
         else:
-            print('Clicking checkbox')
+
             checkbox = row.find_element_by_xpath('//md-checkbox')
             checked = checkbox.get_attribute('aria-checked')
             if checked == 'false':
                 self.driver.execute_script("arguments[0].click();", checkbox)
-                print('Checkbox clicked')
-            print('Checkbox not clicked')
-        print('End do_verification_row')
 
     def do_verify_validation_method(self, item, login):
-        print('Start do_verify_validation_method')
         checkbox = item['row'].find_element_by_xpath(
             '//md-checkbox'
         )
@@ -318,10 +299,8 @@ class Command:
         else:
             if checked == 'false':
                 self.driver.execute_script("arguments[0].click();", checkbox)
-        print('End do_verify_validation_method')
 
     def do_cleanup(self):
-        print('Start do_cleanup')
         element = self.wait.until(
             EC.element_to_be_clickable(
                 (By.ID, 'lm-title-bars-see-options-btn')
@@ -345,15 +324,18 @@ class Command:
             ))
         )
         self.driver.execute_script("arguments[0].click();", element)
-        print('End do_cleanup')
 
     def handle(self, *args, **options):
         file_index = 0
 
         for login in self.login_list:
-            self.driver = webdriver.Chrome(
-                os.path.join(BASE_DIR, 'chromedriver')
-            )
+            if platform.system() == 'Windows':
+                self.driver = webdriver.Chrome(
+                    os.path.join(BASE_DIR, 'chromedriver')
+                )
+            else:
+                self.driver = webdriver.Chrome()
+
             self.wait = WebDriverWait(self.driver, WAIT_TIME)
             self.driver.get('https://accounts.google.com/ServiceLogin')
             self.do_login(
@@ -364,6 +346,7 @@ class Command:
 
             for index in range(3):
                 file = self.file_list[file_index]
+                errors = False
 
                 try:
                     self.do_upload(file)
@@ -378,9 +361,14 @@ class Command:
 
                     self.do_cleanup()
                 except Exception as err:
-                    print("An error has occurred %s" % err)
+                    errors = err
                 finally:
-                    print('Successfully uploaded file "%s"' % file)
+                    if errors:
+                        message = 'Error %(file)s: %(errors)s'
+                    else:
+                        message = 'Success %(file)s'
+
+                    print(message % dict(file=file, errors=errors))
 
                 file_index += 1
             self.driver.quit()
@@ -394,17 +382,13 @@ class Command:
             raise Exception('Invalid credentials')
 
     def report_success(self, **kwargs):
-        print('Start report_success')
         url = API_ROOT + 'mixer/business/success-from-google/'
         headers = {'Authorization': 'Token {}'.format(self.API_TOKEN)}
         try:
-            print('Kwargs', kwargs)
             r = requests.post(url, headers=headers, data=kwargs).json()
-            print('R', r)
             return r['msg']
         except Exception as e:
             raise Exception(e)
-        print('Start report_success')
 
 
 def main(args):
