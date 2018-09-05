@@ -349,11 +349,16 @@ class Command:
 
             self.wait = WebDriverWait(self.driver, WAIT_TIME)
             self.driver.get('https://accounts.google.com/ServiceLogin')
-            self.do_login(
-                login['email'],
-                login['password'],
-                login['recovery']
-            )
+
+            try:
+                self.do_login(
+                    login['email'],
+                    login['password'],
+                    login['recovery']
+                )
+            except Exception:
+                print('Invalid credentails')
+                continue
 
             for index in range(3):
                 file = self.file_list[file_index]
