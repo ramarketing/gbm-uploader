@@ -19,7 +19,7 @@ load_dotenv()
 
 API_ROOT = os.getenv('API_ROOT')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-WAIT_TIME = os.getenv('WAIT_TIME')
+WAIT_TIME = int(os.getenv('WAIT_TIME'))
 
 
 class Command:
