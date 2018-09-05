@@ -4,6 +4,7 @@ import requests
 import sys
 import time
 
+from dotenv import load_dotenv
 from openpyxl import load_workbook
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotVisibleException
@@ -14,9 +15,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-API_ROOT = 'https://matrix.cubo.pe/en/api/'
+load_dotenv()
+
+API_ROOT = os.getenv('API_ROOT')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-WAIT_TIME = 10
+WAIT_TIME = os.getenv('WAIT_TIME')
 
 
 class Command:
@@ -35,11 +38,6 @@ class Command:
         )
         self.file_list = self.get_file_list()
         self.login_list = self.get_login_list()
-
-        '''
-        if (len(self.file_list) * 3) != len(self.login_list):
-            raise Exception("Invalid number of files.")
-        '''
 
     def get_file_list(self, folder=None):
         folder = folder or os.path.join(BASE_DIR, 'csv/')
@@ -268,22 +266,28 @@ class Command:
                 element=element,
                 is_success=False,
             ))
-        else:
 
+        '''
+        else:
             checkbox = row.find_element_by_xpath('//md-checkbox')
             checked = checkbox.get_attribute('aria-checked')
             if checked == 'false':
                 self.driver.execute_script("arguments[0].click();", checkbox)
+        '''
 
     def do_verify_validation_method(self, item, login):
+        '''
         checkbox = item['row'].find_element_by_xpath(
             '//md-checkbox'
         )
         checked = checkbox.get_attribute('aria-checked')
+        '''
 
         if item['is_success']:
+            '''
             if checked == 'true':
                 self.driver.execute_script("arguments[0].click();", checkbox)
+            '''
 
             dataset = item['row'].find_element_by_xpath(
                 '//div[@flex-gt-sm="35"]/div[@class="lm-listing-data"]'
@@ -300,9 +304,12 @@ class Command:
             self.report_success(
                 name=name, address=address, phone=phone, **login
             )
+
+        '''
         else:
             if checked == 'false':
                 self.driver.execute_script("arguments[0].click();", checkbox)
+        '''
 
     def do_cleanup(self):
         element = self.wait.until(
