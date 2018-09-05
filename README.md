@@ -25,11 +25,18 @@ env\Scrips\activate
 pip install -r requirements.txt
 ```
 
-4. Add a credentials file named `1.xlsx` to folder `logins/`
-
-5. Add the `csv` files to folder `csv/`
-
-6. Run the script with the command
+4. Create your `.env` file, change it and save it.
 ```shell
+cp .env.save .env
+nano .env
+```
+
+5. Add a credentials file named `1.xlsx` to folder `logins/`
+
+6. Add the `csv` files to folder `csv/`
+
+7. Run the script with the command
+```shell
+env\Scrips\activate
 python uploader.py <username> <password>
 ```
