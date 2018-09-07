@@ -267,7 +267,7 @@ class Uploader:
             self.driver.get('https://accounts.google.com/ServiceLogin')
 
             try:
-                self.do_login(credential_list)
+                self.do_login(credential)
             except Exception:
                 credential.report_fail()
                 self.driver.quit()
