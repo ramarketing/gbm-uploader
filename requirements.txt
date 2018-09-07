@@ -1,4 +1,4 @@
-selenium
 openpyxl
 python-dotenv
 requests
+selenium

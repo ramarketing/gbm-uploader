@@ -1,11 +1,7 @@
 import os
 import platform
-import requests
-import sys
 import time
 
-from dotenv import load_dotenv
-from openpyxl import load_workbook
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotVisibleException
 from selenium.webdriver.common.action_chains import ActionChains
@@ -14,79 +10,29 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-
-load_dotenv()
-
-API_ROOT = os.getenv('API_ROOT')
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-WAIT_TIME = int(os.getenv('WAIT_TIME'))
+from services import BusinessService, CredentialService
+from config import BASE_DIR, PER_CREDENTIAL, WAIT_TIME
+from constants import TEXT_PHONE_VERIFICATION
 
 
-class Command:
-    active_list = list()
-    file_login_list = os.path.join(BASE_DIR, 'logins/1.xlsx')
-    file_list = None
-    help = 'Upload business to GBM'
-    login_list = None
-    text_phone_verification = 'Get your code at this number by automated call'
+class Uploader:
+    service_cred = CredentialService()
+    service_biz = BusinessService()
 
     def __init__(self, *args):
-        username, password = args
-        self.API_TOKEN = self.user_login(
-            username=username,
-            password=password
-        )
-        self.file_list = self.get_file_list()
-        self.login_list = self.get_login_list()
+        pass
 
-    def get_file_list(self, folder=None):
-        folder = folder or os.path.join(BASE_DIR, 'csv/')
-        files = None
-
-        for (dirpath, dirnames, filenames) in os.walk(folder):
-            files = filenames
-            break
-
-        if not files:
-            raise Exception("Files not found.")
-
-        files = list()
-        for filename in filenames:
-            if not filename.endswith('.csv'):
-                continue
-            files.append(os.path.join(folder, filename))
-        return files
-
-    def get_login_list(self, file=None):
-        file = file or self.file_login_list
-        wb = load_workbook(file, read_only=True)
-        ws = wb.worksheets[0]
-        data = list()
-        for row in ws.rows:
-            email, password, recovery = [cel.value for cel in row[0:3]]
-            if email is None or '@' not in email:
-                continue
-            data.append(dict(
-                email=email,
-                password=password,
-                recovery=recovery
-            ))
-        return data
-
-    def do_login(self, email, password, recovery):
+    def do_login(self, credential):
         element = self.driver.find_element_by_id('identifierId')
-        element.send_keys(email + Keys.RETURN)
-
+        element.send_keys(credential.email + Keys.RETURN)
         time.sleep(1)
 
         element = self.wait.until(
             EC.presence_of_element_located((By.NAME, 'password'))
         )
-        element.send_keys(password + Keys.RETURN)
-
+        element.send_keys(credential.password + Keys.RETURN)
         time.sleep(1)
 
-        # WARNING Check if needs to confirm their indentity
         try:
             self.wait.until(
                 EC.url_contains('https://myaccount.google.com/')
@@ -103,16 +49,14 @@ class Command:
                     (By.NAME, 'knowledgePreregisteredEmailResponse')
                 )
             )
-            element.send_keys(recovery + Keys.RETURN)
+            element.send_keys(credential.recovery + Keys.RETURN)
 
         self.wait.until(
             EC.url_contains('https://myaccount.google.com/')
         )
 
     def do_upload(self, file):
-        self.driver.get(
-            'https://www.google.com/'
-        )
+        self.driver.get('https://www.google.com/')
 
         try:
             alert = self.driver.switch_to_alert()
@@ -206,7 +150,7 @@ class Command:
         time.sleep(WAIT_TIME)
 
     def do_verification(self):
-        self.active_list = list()
+        self.active_list = []
         rows = self.driver.find_elements_by_css_selector(
             'div.lm-list-data-row'
         )
@@ -237,7 +181,7 @@ class Command:
 
             text = self.driver.find_element_by_xpath('//body').text.strip()
 
-            if self.text_phone_verification not in text:
+            if TEXT_PHONE_VERIFICATION not in text:
                 self.driver.close()
                 continue
 
@@ -267,49 +211,19 @@ class Command:
                 is_success=False,
             ))
 
-        '''
-        else:
-            checkbox = row.find_element_by_xpath('//md-checkbox')
-            checked = checkbox.get_attribute('aria-checked')
-            if checked == 'false':
-                self.driver.execute_script("arguments[0].click();", checkbox)
-        '''
+    def do_verify_validation_method(self, item, credential):
+        name = item['row'].find_element_by_xpath(
+            '//div[@flex-gt-sm="35"]/div[@class="lm-listing-data"]'
+        ).find_element_by_css_selector(
+            'div.lm-darkText'
+        ).text.strip()
 
-    def do_verify_validation_method(self, item, login):
-        '''
-        checkbox = item['row'].find_element_by_xpath(
-            '//md-checkbox'
-        )
-        checked = checkbox.get_attribute('aria-checked')
-        '''
+        biz = self.biz_list.get_by_name(name)
 
         if item['is_success']:
-            '''
-            if checked == 'true':
-                self.driver.execute_script("arguments[0].click();", checkbox)
-            '''
-
-            dataset = item['row'].find_element_by_xpath(
-                '//div[@flex-gt-sm="35"]/div[@class="lm-listing-data"]'
-            )
-            name = dataset.find_element_by_css_selector(
-                'div.lm-darkText'
-            ).text.strip()
-            address = dataset.find_element_by_css_selector(
-                'div.lm-listing-data-less-dark'
-            ).text.strip()
-            phone = item['row'].find_element_by_xpath(
-                '//div[@flex-gt-sm="25"]/div[@class="lm-listing-data"]'
-            ).text.strip()
-            self.report_success(
-                name=name, address=address, phone=phone, **login
-            )
-
-        '''
+            biz.report_success(credential=credential)
         else:
-            if checked == 'false':
-                self.driver.execute_script("arguments[0].click();", checkbox)
-        '''
+            biz.report_fail()
 
     def do_cleanup(self):
         element = self.wait.until(
@@ -339,7 +253,9 @@ class Command:
     def handle(self, *args, **options):
         file_index = 0
 
-        for login in self.login_list:
+        credential_list = self.service_cred.get_list()
+
+        for credential in credential_list:
             if platform.system() == 'Windows':
                 self.driver = webdriver.Chrome(
                     os.path.join(BASE_DIR, 'chromedriver')
@@ -351,65 +267,33 @@ class Command:
             self.driver.get('https://accounts.google.com/ServiceLogin')
 
             try:
-                self.do_login(
-                    login['email'],
-                    login['password'],
-                    login['recovery']
-                )
+                self.do_login(credential_list)
             except Exception:
-                print('Invalid credentails')
+                credential.report_fail()
+                self.driver.quit()
                 continue
 
-            for index in range(3):
-                file = self.file_list[file_index]
-                errors = False
+            self.biz_list = self.service_biz.get_list()
+
+            for index in range(PER_CREDENTIAL):
+                if index > 0:
+                    self.biz_list.get_next_page()
+
+                file = self.biz_list.create_csv()
 
                 try:
                     self.do_upload(file)
                     self.do_preparation()
                     self.do_verification()
 
-                    # Return and report
                     self.driver.switch_to_window(self.driver.window_handles[0])
 
                     for item in self.active_list:
-                        self.do_verify_validation_method(item, login)
+                        self.do_verify_validation_method(item, credential)
 
                     self.do_cleanup()
                 except Exception as err:
-                    errors = err
-                finally:
-                    if errors:
-                        message = 'Error %(file)s: %(errors)s'
-                    else:
-                        message = 'Success %(file)s'
-
-                    print(message % dict(file=file, errors=errors))
+                    print('Error', err)
 
                 file_index += 1
             self.driver.quit()
-
-    def user_login(self, **kwargs):
-        url = API_ROOT + 'account/login/'
-        try:
-            r = requests.post(url, data=kwargs).json()
-            return r['token']
-        except Exception:
-            raise Exception('Invalid credentials')
-
-    def report_success(self, **kwargs):
-        url = API_ROOT + 'mixer/business/success-from-google/'
-        headers = {'Authorization': 'Token {}'.format(self.API_TOKEN)}
-        try:
-            r = requests.post(url, headers=headers, data=kwargs).json()
-            return r['msg']
-        except Exception as e:
-            raise Exception(e)
-
-
-def main(args):
-    Command(*args).handle()
-
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
