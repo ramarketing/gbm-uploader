@@ -7,7 +7,7 @@ This Python script allows you to upload CSV files with business to Google Busine
 * [git for Windows](https://github.com/git-for-windows/git/releases/download/v2.18.0.windows.1/Git-2.18.0-64-bit.exe) - Make sure to select: use git bash on Windows MS-DOS shell.
 * [Python 3.7.0](https://www.python.org/downloads/release/python-370/) - Make sue to select: Add to system `$PATH`.
 
-## Running the script
+## Installing the script
 1. Go to the desired folder
 ```shell
 git clone https://github.com/tiptomarketing/gbm-uploader.git
@@ -28,11 +28,14 @@ pip install -r requirements.txt
 
 4. Create your `.env` file, change it and save it.
 ```shell
-cp .env.save .env
+copy .env.save .env
 notepad .env
 ```
 
-5. Run the script with the command
+5. Type the information provided, save and close.
+
+## Running the script
+
 ```shell
 env\Scrips\activate
 python uploader
