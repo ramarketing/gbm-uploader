@@ -5,7 +5,7 @@ from services.base import (
 
 class Credential(BaseEntity):
     def __str__(self):
-        return self.name
+        return self.email
 
 
 class CredentialList(BaseEntityList):

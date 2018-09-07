@@ -13,6 +13,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from services import BusinessService, CredentialService
 from config import BASE_DIR, PER_CREDENTIAL, WAIT_TIME
 from constants import TEXT_PHONE_VERIFICATION
+from logger import UploaderLogger
+
+
+logger = UploaderLogger()
 
 
 class Uploader:
@@ -23,6 +27,8 @@ class Uploader:
         pass
 
     def do_login(self, credential):
+        logger(instance=credential)
+
         element = self.driver.find_element_by_id('identifierId')
         element.send_keys(credential.email + Keys.RETURN)
         time.sleep(1)
@@ -49,7 +55,7 @@ class Uploader:
                     (By.NAME, 'knowledgePreregisteredEmailResponse')
                 )
             )
-            element.send_keys(credential.recovery + Keys.RETURN)
+            element.send_keys(credential.recovery_email + Keys.RETURN)
 
         self.wait.until(
             EC.url_contains('https://myaccount.google.com/')
@@ -147,9 +153,9 @@ class Uploader:
         except Exception:
             pass
 
-        time.sleep(WAIT_TIME)
+        # time.sleep(WAIT_TIME)
 
-    def do_verification(self):
+    def do_verification(self, credential):
         self.active_list = []
         rows = self.driver.find_elements_by_css_selector(
             'div.lm-list-data-row'
@@ -165,27 +171,45 @@ class Uploader:
         if len(self.active_list) == 0:
             return self.driver.quit()
 
-        for item in self.active_list:
+        tab_index = 1
 
+        for item in self.active_list:
             element = item['element'].find_element_by_css_selector(
                 'div.lm-listing-data.lm-pointer'
             )
             self.driver.execute_script("arguments[0].click();", element)
+            item['tab_index'] = tab_index
+            tab_index += 1
 
-        for i in reversed(range(1, len(self.driver.window_handles))):
+        for i in range(1, len(self.driver.window_handles)):
             self.driver.switch_to_window(self.driver.window_handles[i])
 
+            item = self.get_item_by_tab_index(i)
+            biz = item['biz']
+
             if 'Success' not in self.driver.title:
-                self.driver.close()
+                # biz.report_fail()
                 continue
 
             text = self.driver.find_element_by_xpath('//body').text.strip()
 
-            if TEXT_PHONE_VERIFICATION not in text:
-                self.driver.close()
-                continue
+            if TEXT_PHONE_VERIFICATION in text:
+                logger(
+                    instance=biz,
+                    data={
+                        'text': text,
+                        'index': i,
+                        'item': item,
+                        'phone': biz.phone,
+                    }
+                )
+                biz.report_success(credential)
+            else:
+                # biz.report_fail()
+                pass
 
-            self.active_list[i - 1]['is_success'] = True
+        for i in reversed(range(1, len(self.driver.window_handles))):
+            self.driver.switch_to_window(self.driver.window_handles[i])
             self.driver.close()
 
     def do_verification_row(self, row):
@@ -193,62 +217,52 @@ class Uploader:
             .move_to_element(row) \
             .perform()
 
-        status = row.find_element_by_css_selector(
-            'div.lm-statusColStatus'
-        ).text.strip().upper()
-        if status == 'PUBLISHED':
+        try:
+            got_it = self.driver.find_element_by_id('lm-tip-got-it-btn')
+            self.driver.execute_script("arguments[0].click();", got_it)
+        except Exception:
+            pass
+
+        index, name, address, phone, status, action = row.text.split('\n')
+
+        if status.upper() == 'PUBLISHED':
             return
 
         element = row.find_element_by_css_selector(
             'div.lm-action-col'
         )
-        action = element.text.strip().upper()
-
-        if action == 'GET VERIFIED':
-            self.active_list.append(dict(
-                row=row,
-                element=element,
-                is_success=False,
-            ))
-
-    def do_verify_validation_method(self, item, credential):
-        name = item['row'].find_element_by_xpath(
-            '//div[@flex-gt-sm="35"]/div[@class="lm-listing-data"]'
-        ).find_element_by_css_selector(
-            'div.lm-darkText'
-        ).text.strip()
-
         biz = self.biz_list.get_by_name(name)
 
+        if action == 'Get verified' and not self.in_active_list(biz):
+            logger(instance=biz, data={'action': action, 'status': status})
+            self.active_list.append(dict(
+                biz=biz,
+                element=element,
+                row=row,
+                is_success=False,
+            ))
+        else:
+            logger(instance=biz, data='OUT')
+
+    def do_verify_validation_method(self, item, credential):
+        biz = item['biz']
         if item['is_success']:
             biz.report_success(credential=credential)
+            logger(instance=biz, data='Success')
         else:
-            biz.report_fail()
+            # biz.report_fail()
+            logger(instance=biz, data='Fail')
 
-    def do_cleanup(self):
-        element = self.wait.until(
-            EC.element_to_be_clickable(
-                (By.ID, 'lm-title-bars-see-options-btn')
-            )
-        )
-        self.driver.execute_script("arguments[0].click();", element)
+    def get_item_by_tab_index(self, tab_index):
+        for item in self.active_list:
+            if item['tab_index'] == tab_index:
+                return item
 
-        time.sleep(3)
-
-        element = self.wait.until(
-            EC.element_to_be_clickable(
-                (By.ID, 'lm-title-bars-remove-btn')
-            )
-        )
-        self.driver.execute_script("arguments[0].click();", element)
-
-        element = self.wait.until(
-            EC.element_to_be_clickable((
-                By.ID,
-                'lm-confirm-dialog-list-selection-remove-selected-2-btn'
-            ))
-        )
-        self.driver.execute_script("arguments[0].click();", element)
+    def in_active_list(self, biz):
+        for item in self.active_list:
+            if biz == item['biz']:
+                return True
+        return False
 
     def handle(self, *args, **options):
         file_index = 0
@@ -280,18 +294,14 @@ class Uploader:
                     self.biz_list.get_next_page()
 
                 file = self.biz_list.create_csv()
+                logger(instance=self.biz_list, data={'file': file})
 
                 try:
                     self.do_upload(file)
                     self.do_preparation()
-                    self.do_verification()
+                    self.do_verification(credential)
 
                     self.driver.switch_to_window(self.driver.window_handles[0])
-
-                    for item in self.active_list:
-                        self.do_verify_validation_method(item, credential)
-
-                    self.do_cleanup()
                 except Exception as err:
                     print('Error', err)
 

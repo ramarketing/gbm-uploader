@@ -51,4 +51,4 @@ CSV_HEADER = [
 ]
 
 
-TEXT_PHONE_VERIFICATION = 'Get your code at this number by automated call'
+TEXT_PHONE_VERIFICATION = 'Get your code at this number now by automated call'
