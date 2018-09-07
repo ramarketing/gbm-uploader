@@ -242,6 +242,7 @@ class Uploader:
                 is_success=False,
             ))
         else:
+            biz.report_fail()
             logger(instance=biz, data='OUT')
 
     def do_verify_validation_method(self, item, credential):
