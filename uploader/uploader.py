@@ -169,7 +169,7 @@ class Uploader:
             self.do_verification_row(row)
 
         if len(self.active_list) == 0:
-            return self.driver.quit()
+            return
 
         tab_index = 1
 
