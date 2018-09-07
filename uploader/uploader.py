@@ -312,4 +312,9 @@ class Uploader:
                     print('Error', err)
 
                 file_index += 1
+
+            try:
+                credential.report_success()
+            except Exception:
+                pass
             self.driver.quit()

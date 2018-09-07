@@ -7,6 +7,9 @@ class Credential(BaseEntity):
     def __str__(self):
         return self.email
 
+    def report_success(self):
+        return self.service.request('post', pk=self.pk, extra='set-success')
+
 
 class CredentialList(BaseEntityList):
     entity = Credential
