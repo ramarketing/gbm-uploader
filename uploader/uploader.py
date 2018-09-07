@@ -174,7 +174,7 @@ class Uploader:
         if len(self.active_list) == 0:
             return
 
-        tab_index = 1
+        tab_index = len(self.active_list)
 
         for item in self.active_list:
             element = item['element'].find_element_by_css_selector(
@@ -182,7 +182,7 @@ class Uploader:
             )
             self.driver.execute_script("arguments[0].click();", element)
             item['tab_index'] = tab_index
-            tab_index += 1
+            tab_index -= 1
 
         for i in range(1, len(self.driver.window_handles)):
             self.driver.switch_to_window(self.driver.window_handles[i])
