@@ -204,6 +204,7 @@ class Uploader:
                         'index': i,
                         'item': item,
                         'phone': biz.phone,
+                        'active_list': self.active_list,
                     }
                 )
                 biz.report_success(credential)
@@ -242,20 +243,11 @@ class Uploader:
                 biz=biz,
                 element=element,
                 row=row,
-                is_success=False,
+                phone=phone,
             ))
         else:
             biz.report_fail()
             logger(instance=biz, data='OUT')
-
-    def do_verify_validation_method(self, item, credential):
-        biz = item['biz']
-        if item['is_success']:
-            biz.report_success(credential=credential)
-            logger(instance=biz, data='Success')
-        else:
-            # biz.report_fail()
-            logger(instance=biz, data='Fail')
 
     def get_item_by_tab_index(self, tab_index):
         for item in self.active_list:
