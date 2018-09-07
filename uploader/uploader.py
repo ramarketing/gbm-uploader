@@ -188,7 +188,7 @@ class Uploader:
             biz = item['biz']
 
             if 'Success' not in self.driver.title:
-                # biz.report_fail()
+                biz.report_fail()
                 continue
 
             text = self.driver.find_element_by_xpath('//body').text.strip()
@@ -205,7 +205,7 @@ class Uploader:
                 )
                 biz.report_success(credential)
             else:
-                # biz.report_fail()
+                biz.report_fail()
                 pass
 
         for i in reversed(range(1, len(self.driver.window_handles))):
@@ -266,7 +266,6 @@ class Uploader:
 
     def handle(self, *args, **options):
         file_index = 0
-
         credential_list = self.service_cred.get_list()
 
         for credential in credential_list:
@@ -290,7 +289,7 @@ class Uploader:
             self.biz_list = self.service_biz.get_list()
 
             for index in range(PER_CREDENTIAL):
-                if index > 0:
+                if file_index > 0:
                     self.biz_list.get_next_page()
 
                 file = self.biz_list.create_csv()
