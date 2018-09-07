@@ -197,16 +197,7 @@ class Uploader:
             text = self.driver.find_element_by_xpath('//body').text.strip()
 
             if TEXT_PHONE_VERIFICATION in text:
-                logger(
-                    instance=biz,
-                    data={
-                        'text': text,
-                        'index': i,
-                        'item': item,
-                        'phone': biz.phone,
-                        'active_list': self.active_list,
-                    }
-                )
+                logger(instance=biz, data='Success')
                 biz.report_success(credential)
             else:
                 biz.report_fail()
