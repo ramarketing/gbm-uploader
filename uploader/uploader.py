@@ -10,6 +10,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from exceptions import CredentialInvalid
 from services import BusinessService, CredentialService
 from config import BASE_DIR, PER_CREDENTIAL, WAIT_TIME
 from constants import TEXT_PHONE_VERIFICATION
@@ -22,6 +23,7 @@ logger = UploaderLogger()
 class Uploader:
     service_cred = CredentialService()
     service_biz = BusinessService()
+    biz_list = None
 
     def __init__(self, *args):
         pass
@@ -57,9 +59,12 @@ class Uploader:
             )
             element.send_keys(credential.recovery_email + Keys.RETURN)
 
-        self.wait.until(
-            EC.url_contains('https://myaccount.google.com/')
-        )
+        try:
+            self.wait.until(
+                EC.url_contains('https://myaccount.google.com/')
+            )
+        except Exception:
+            raise CredentialInvalid
 
     def do_upload(self, file):
         self.driver.get('https://www.google.com/')
@@ -149,11 +154,9 @@ class Uploader:
                     (By.ID, 'lm-list-view-promo-use-list-btn')
                 )
             )
-            element.click()
+            self.driver.execute_script("arguments[0].click();", element)
         except Exception:
             pass
-
-        # time.sleep(WAIT_TIME)
 
     def do_verification(self, credential):
         self.active_list = []
@@ -282,12 +285,15 @@ class Uploader:
 
             try:
                 self.do_login(credential)
-            except Exception:
+            except CredentialInvalid:
                 credential.report_fail()
                 self.driver.quit()
                 continue
+            except Exception:
+                self.driver.quit()
+                continue
 
-            self.biz_list = self.service_biz.get_list()
+            self.biz_list = self.biz_list or self.service_biz.get_list()
 
             for index in range(PER_CREDENTIAL):
                 if file_index > 0:
