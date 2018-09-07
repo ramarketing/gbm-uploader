@@ -16,3 +16,8 @@ class CredentialService(BaseService):
     endpoint = '/mixer/credentials/'
     entity = Credential
     entity_list = CredentialList
+
+    def get_list(self, **kwargs):
+        if 'can_use' not in kwargs:
+            kwargs['can_use'] = 1
+        return super().get_list(**kwargs)
