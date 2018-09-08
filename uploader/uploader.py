@@ -184,6 +184,8 @@ class Uploader:
             item['tab_index'] = tab_index
             tab_index -= 1
 
+        has_success = False
+
         for i in range(1, len(self.driver.window_handles)):
             self.driver.switch_to_window(self.driver.window_handles[i])
 
@@ -199,6 +201,7 @@ class Uploader:
             if TEXT_PHONE_VERIFICATION in text:
                 logger(instance=biz, data='Success')
                 biz.report_success(credential)
+                has_success = True
             else:
                 biz.report_fail()
                 pass
@@ -206,6 +209,8 @@ class Uploader:
         for i in reversed(range(1, len(self.driver.window_handles))):
             self.driver.switch_to_window(self.driver.window_handles[i])
             self.driver.close()
+
+        return has_success
 
     def do_verification_row(self, row):
         ActionChains(self.driver) \
@@ -288,16 +293,15 @@ class Uploader:
                 try:
                     self.do_upload(file)
                     self.do_preparation()
-                    self.do_verification(credential)
-
+                    has_success = self.do_verification(credential)
                     self.driver.switch_to_window(self.driver.window_handles[0])
+
+                    if has_success:
+                        break
                 except Exception as err:
-                    print('Error', err)
+                    logger(instance=err, data=err)
 
                 file_index += 1
 
-            try:
-                credential.report_success()
-            except Exception:
-                pass
+            credential.report_success()
             self.driver.quit()
