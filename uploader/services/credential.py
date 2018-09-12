@@ -1,3 +1,5 @@
+import os
+
 from services.base import (
     BaseEntity, BaseEntityList, BaseService
 )
@@ -23,4 +25,6 @@ class CredentialService(BaseService):
     def get_list(self, **kwargs):
         if 'can_use' not in kwargs:
             kwargs['can_use'] = 1
+        if 'limit' not in kwargs:
+            kwargs['limit'] = os.getenv('CREDENTIALS', 10)
         return super().get_list(**kwargs)
