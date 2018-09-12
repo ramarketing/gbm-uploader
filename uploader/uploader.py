@@ -45,7 +45,11 @@ class Uploader:
             self.wait.until(
                 EC.url_contains('https://myaccount.google.com/')
             )
+            return
         except Exception:
+            pass
+
+        try:
             element = self.wait.until(
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[@data-challengetype="12"]')
@@ -58,14 +62,16 @@ class Uploader:
                 )
             )
             element.send_keys(credential.recovery_email + Keys.RETURN)
+        except Exception:
+            pass
 
         try:
             phone = self.wait.until(
                 EC.presence_of_element_located(
-                    By.ID, 'deviceAddress'
+                    (By.ID, 'deviceAddress')
                 )
             )
-        except Exception:
+        except Exception as e:
             phone = None
 
         if phone:
@@ -283,10 +289,12 @@ class Uploader:
             try:
                 self.do_login(credential)
             except CredentialInvalid:
+                logger(instance=credential, data='Reported fail')
                 credential.report_fail()
                 self.driver.quit()
                 continue
-            except Exception:
+            except Exception as e:
+                logger(instance=credential, data='Pass')
                 self.driver.quit()
                 continue
 
