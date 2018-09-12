@@ -60,11 +60,20 @@ class Uploader:
             element.send_keys(credential.recovery_email + Keys.RETURN)
 
         try:
-            self.wait.until(
-                EC.url_contains('https://myaccount.google.com/')
+            phone = self.wait.until(
+                EC.presence_of_element_located(
+                    By.ID, 'deviceAddress'
+                )
             )
         except Exception:
+            phone = None
+
+        if phone:
             raise CredentialInvalid
+
+        self.wait.until(
+            EC.url_contains('https://myaccount.google.com/')
+        )
 
     def do_upload(self, file):
         self.driver.get('https://www.google.com/')
@@ -273,8 +282,11 @@ class Uploader:
 
             try:
                 self.do_login(credential)
-            except Exception:
+            except CredentialInvalid:
                 credential.report_fail()
+                self.driver.quit()
+                continue
+            except Exception:
                 self.driver.quit()
                 continue
 
