@@ -273,11 +273,8 @@ class Uploader:
 
             try:
                 self.do_login(credential)
-            except CredentialInvalid:
-                credential.report_fail()
-                self.driver.quit()
-                continue
             except Exception:
+                credential.report_fail()
                 self.driver.quit()
                 continue
 
