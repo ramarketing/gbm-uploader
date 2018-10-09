@@ -207,11 +207,8 @@ class Uploader:
             item = self.get_item_by_tab_index(i)
             biz = item['biz']
 
-            if 'Success' not in self.driver.title:
-                biz.report_fail()
-                continue
-
             text = self.driver.find_element_by_xpath('//body').text.strip()
+            logger(instance=biz, data="Text founded: {}".format(text))
 
             if TEXT_PHONE_VERIFICATION in text:
                 logger(instance=biz, data='Success')
