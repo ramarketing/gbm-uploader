@@ -18,7 +18,7 @@ cd gbm-uploader
 ```shell
 pip install virtualenv
 virtualenv env
-env\Scrips\activate
+env\Scripts\activate
 ```
 
 3. Install Python Requirements
@@ -28,8 +28,8 @@ pip install -r requirements.txt
 
 4. Create your `.env` file, change it and save it.
 ```shell
-copy .env.save .env
-notepad .env
+copy uploader/.env.save uploader/.env
+notepad uploader/.env
 ```
 
 5. Type the information provided, save and close.
