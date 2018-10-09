@@ -28,8 +28,8 @@ pip install -r requirements.txt
 
 4. Create your `.env` file, change it and save it.
 ```shell
-copy uploader/.env.save uploader/.env
-notepad uploader/.env
+copy uploader\.env.save uploader\.env
+notepad uploader\.env
 ```
 
 5. Type the information provided, save and close.
