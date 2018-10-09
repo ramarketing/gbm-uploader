@@ -38,6 +38,6 @@ notepad .env
 
 ```shell
 cd ~/Sites/gbm-uploader  # Recommended path
-env\Scrips\activate
+env\Scripts\activate
 python uploader
 ```
