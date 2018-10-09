@@ -10,7 +10,7 @@ This Python script allows you to upload CSV files with business to Google Busine
 ## Installing the script
 1. Go to the desired folder
 ```shell
-git clone https://github.com/tiptomarketing/gbm-uploader.git
+git clone https://github.com/ramarketing/gbm-uploader.git
 cd gbm-uploader
 ```
 
