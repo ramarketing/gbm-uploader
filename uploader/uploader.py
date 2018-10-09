@@ -207,8 +207,11 @@ class Uploader:
             item = self.get_item_by_tab_index(i)
             biz = item['biz']
 
+            if 'Choose a way to verify' not in self.driver.title:
+                biz.report_fail()
+                continue
+
             text = self.driver.find_element_by_xpath('//body').text.strip()
-            logger(instance=biz, data="Text founded: {}".format(text))
 
             if TEXT_PHONE_VERIFICATION in text:
                 logger(instance=biz, data='Success')
@@ -216,7 +219,6 @@ class Uploader:
                 has_success = True
             else:
                 biz.report_fail()
-                pass
 
         for i in reversed(range(1, len(self.driver.window_handles))):
             self.driver.switch_to_window(self.driver.window_handles[i])
