@@ -206,8 +206,14 @@ class Uploader:
 
             item = self.get_item_by_tab_index(i)
             biz = item['biz']
+            title = self.driver.title
 
-            if 'Choose a way to verify' not in self.driver.title:
+            logger(instance=biz, data='Title: "{}"'.format(title))
+
+            if (
+                'Choose a way to verify' not in title and
+                'Success' not in title
+            ):
                 biz.report_fail()
                 continue
 
@@ -275,12 +281,20 @@ class Uploader:
         credential_list = self.service_cred.get_list()
 
         for credential in credential_list:
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_extension(
+                os.path.join(BASE_DIR, 'expressvpn.crx')
+            )
+
             if platform.system() == 'Windows':
                 self.driver = webdriver.Chrome(
-                    os.path.join(BASE_DIR, 'chromedriver')
+                    executable_path=os.path.join(BASE_DIR, 'chromedriver'),
+                    chrome_options=chrome_options
                 )
             else:
-                self.driver = webdriver.Chrome()
+                self.driver = webdriver.Chrome(
+                    chrome_options=chrome_options
+                )
 
             self.wait = WebDriverWait(self.driver, WAIT_TIME)
             self.driver.get('https://accounts.google.com/ServiceLogin')
