@@ -312,9 +312,11 @@ class Uploader:
 
                 if "t find your Google Account" in text:
                     logger(instance=credential, data="Account doesn't exists.")
+                    logger(instance=credential, data='Reported fail')
                     credential.report_fail()
                 elif "Account disabled" in text:
                     logger(instance=credential, data="Account disabled.")
+                    logger(instance=credential, data='Reported fail')
                     credential.report_fail()
                 else:
                     logger(instance=credential, data='Pass')
