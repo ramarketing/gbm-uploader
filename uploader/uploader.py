@@ -311,11 +311,13 @@ class Uploader:
                 text = self.driver.find_element_by_xpath('//body').text.strip()
 
                 if "t find your Google Account" in text:
-                    raise CredentialInvalid("Account does not exists.")
+                    logger(instance=credential, data="Account doesn't exists.")
+                    credential.report_fail()
                 elif "Account disabled" in text:
-                    raise CredentialInvalid("Account disabled.")
-
-                logger(instance=credential, data='Pass')
+                    logger(instance=credential, data="Account disabled.")
+                    credential.report_fail()
+                else:
+                    logger(instance=credential, data='Pass')
                 self.driver.quit()
                 continue
 
