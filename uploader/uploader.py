@@ -312,8 +312,8 @@ class Uploader:
 
                 logger(instance=credential, data=text)
 
-                if "Couldn't find your Google Account" in text:
-                    raise CredentialInvalid("Account doesn't exists.")
+                if "t find your Google Account" in text:
+                    raise CredentialInvalid("Account does not exists.")
                 elif "Account disabled" in text:
                     raise CredentialInvalid("Account disabled.")
 
