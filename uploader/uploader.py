@@ -282,19 +282,21 @@ class Uploader:
         credential_list = self.service_cred.get_list()
 
         for credential in credential_list:
+            '''
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_extension(
                 os.path.join(BASE_DIR, 'expressvpn.crx')
             )
+            '''
 
             if platform.system() == 'Windows':
                 self.driver = webdriver.Chrome(
                     executable_path=os.path.join(BASE_DIR, 'chromedriver'),
-                    chrome_options=chrome_options
+                    # chrome_options=chrome_options
                 )
             else:
                 self.driver = webdriver.Chrome(
-                    chrome_options=chrome_options
+                    # chrome_options=chrome_options
                 )
 
             self.wait = WebDriverWait(self.driver, WAIT_TIME)
