@@ -75,7 +75,7 @@ class Uploader:
             phone = None
 
         if phone:
-            raise CredentialInvalid("Requires cellphone")
+            raise CredentialInvalid("Requires cellphone.")
 
         self.wait.until(
             EC.url_contains('https://myaccount.google.com/')
@@ -310,12 +310,10 @@ class Uploader:
             except Exception as e:
                 text = self.driver.find_element_by_xpath('//body').text.strip()
 
-                logger(instance=credential, data=text)
-
                 if "t find your Google Account" in text:
-                    raise CredentialInvalid("Account does not exists")
+                    raise CredentialInvalid("Account does not exists.")
                 elif "Account disabled" in text:
-                    raise CredentialInvalid("Account disabled")
+                    raise CredentialInvalid("Account disabled.")
 
                 logger(instance=credential, data='Pass')
                 self.driver.quit()
