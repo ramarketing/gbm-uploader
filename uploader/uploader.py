@@ -79,7 +79,7 @@ class Uploader:
 
         text = self.driver.find_element_by_xpath('//body').text.strip()
 
-        if "Couldn't find your Google account" in text:
+        if "Couldn't find your Google Account" in text:
             raise CredentialInvalid("Account doesn't exists.")
 
         self.wait.until(
