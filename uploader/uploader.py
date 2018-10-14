@@ -75,7 +75,12 @@ class Uploader:
             phone = None
 
         if phone:
-            raise CredentialInvalid
+            raise CredentialInvalid("Requires cellphone.")
+
+        text = self.driver.find_element_by_xpath('//body').text.strip()
+
+        if "Couldn't find your Google account" in text:
+            raise CredentialInvalid("Account doesn't exists.")
 
         self.wait.until(
             EC.url_contains('https://myaccount.google.com/')
@@ -212,7 +217,8 @@ class Uploader:
 
             if (
                 'Choose a way to verify' not in title and
-                'Success' not in title
+                'Success' not in title and
+                'Is this your business' not in title
             ):
                 biz.report_fail()
                 continue
