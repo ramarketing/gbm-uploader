@@ -11,6 +11,7 @@ local_settings.py
 celerybeat-schedule
 *.db
 .DS_Store
+.vscode
 dump.rdb
 
 
