@@ -316,14 +316,22 @@ class Uploader:
                     logger(instance=credential, data="Account doesn't exists.")
                     logger(instance=credential, data='Reported fail')
                     credential.report_fail()
+                    continue
                 elif "Account disabled" in text:
                     logger(instance=credential, data="Account disabled.")
                     logger(instance=credential, data='Reported fail')
                     credential.report_fail()
+                    continue
                 else:
-                    logger(instance=credential, data='Pass')
-                self.driver.quit()
-                continue
+                    self.driver.get(
+                        'https://business.google.com/manage/?noredirect=1#/upload'
+                    )
+                    if not self.driver.current_url.startswith(
+                        'https://business.google.com/'
+                    ):
+                        logger(instance=credential, data='Pass')
+                        self.driver.quit()
+                        continue
 
             self.biz_list = self.biz_list or self.service_biz.get_list()
 
