@@ -220,12 +220,21 @@ class Uploader:
 
             text = self.driver.find_element_by_xpath('//body').text.strip()
 
-            if TEXT_PHONE_VERIFICATION in text:
-                logger(instance=biz, data='Success')
-                biz.report_success(credential)
-                has_success = True
-            else:
-                biz.report_fail()
+            try:
+                if TEXT_PHONE_VERIFICATION in text:
+                    logger(instance=biz, data='Success')
+                    biz.report_success(credential)
+                    has_success = True
+                else:
+                    biz.report_fail()
+            except:
+                logger(
+                    instance=biz,
+                    data='Couldn\'t report "{}" back to server.'.format(
+                        'success' if has_success else 'fail'
+                    )
+                )
+
 
         for i in reversed(range(1, len(self.driver.window_handles))):
             self.driver.switch_to_window(self.driver.window_handles[i])
