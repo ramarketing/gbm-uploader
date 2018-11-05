@@ -227,7 +227,7 @@ class Uploader:
                     has_success = True
                 else:
                     biz.report_fail()
-            except:
+            except Exception:
                 logger(
                     instance=biz,
                     data='Couldn\'t report "{}" back to server.'.format(
