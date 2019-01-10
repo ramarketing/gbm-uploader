@@ -233,7 +233,7 @@ class Uploader:
                         biz.state,
                         biz.zip_code,
                     ]
-                    success_logger(instance=biz, data=',',join(success_line))
+                    success_logger(instance=biz, data=','.join(success_line))
 
                     biz.report_success(credential)
                     has_success = True
