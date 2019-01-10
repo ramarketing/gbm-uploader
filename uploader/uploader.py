@@ -18,6 +18,7 @@ from logger import UploaderLogger
 
 
 logger = UploaderLogger()
+success_logger = UploaderLogger('success')
 
 
 class Uploader:
@@ -141,7 +142,6 @@ class Uploader:
             raise Exception('Submit button not found.')
 
     def do_preparation(self):
-
         try:
             element = self.wait.until(
                 EC.visibility_of_element_located(
@@ -223,6 +223,18 @@ class Uploader:
             try:
                 if TEXT_PHONE_VERIFICATION in text:
                     logger(instance=biz, data='Success')
+                    success_line = [
+                        credential.email,
+                        credential.password,
+                        credential.recovery_email,
+                        biz.phone_friendly,
+                        biz.address,
+                        biz.city,
+                        biz.state,
+                        biz.zip_code,
+                    ]
+                    success_logger(instance=biz, data=',',join(success_line))
+
                     biz.report_success(credential)
                     has_success = True
                 else:

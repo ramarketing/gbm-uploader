@@ -5,8 +5,11 @@ from config import BASE_DIR, DEBUG
 
 
 class UploaderLogger:
-    def __init__(self):
-        self.file = os.path.join(BASE_DIR, 'uploader.log')
+    def __init__(self, filename='uploader'):
+        assert isinstance(filename, str), "Filename must be a string instace."
+        if not filename.endswith('.log'):
+            filename = '{}.log'.format(filename)
+        self.file = os.path.join(BASE_DIR, filename)
 
     def __call__(self, data=None, instance=None):
         if instance:
