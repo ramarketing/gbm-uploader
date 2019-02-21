@@ -43,10 +43,6 @@ class BaseEntityList:
         self.next = self.raw_data['next']
         self.previous = self.raw_data['previous']
 
-        assert len(self.raw_data['results']) > 0, (
-            "%s: Empty result list." % self.__class__.__name__
-        )
-
         self.entity_list = [
             self.entity(self.service, item)
             for item in self.raw_data['results']
