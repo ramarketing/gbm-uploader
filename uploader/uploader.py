@@ -298,27 +298,34 @@ class Uploader:
                 return True
         return False
 
-    def handle(self, *args, **options):
+    def can_continue(self, max_success, **kwargs):
+        new_kwargs = kwargs.copy()
+        new_kwargs['is_success'] = True
+        success_count = self.service_biz.get_list(**new_kwargs)
+        return success_count.total_count < max_success
+
+    def handle(self, *args, **kwargs):
+        if 'max' in kwargs:
+            try:
+                max_success = int(kwargs.pop('max'))
+            except ValueError:
+                max_success = 0
+        else:
+            max_success = 0
+
+        if max_success and not self.can_continue(max_success, **kwargs):
+            return
+
         file_index = 0
-        credential_list = self.service_cred.get_list()
+        credential_list = self.service_cred.get_list(**kwargs)
 
         for credential in credential_list:
-            '''
-            chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_extension(
-                os.path.join(BASE_DIR, 'expressvpn.crx')
-            )
-            '''
-
             if platform.system() == 'Windows':
                 self.driver = webdriver.Chrome(
                     executable_path=os.path.join(BASE_DIR, 'chromedriver'),
-                    # chrome_options=chrome_options
                 )
             else:
-                self.driver = webdriver.Chrome(
-                    # chrome_options=chrome_options
-                )
+                self.driver = webdriver.Chrome()
 
             self.wait = WebDriverWait(self.driver, WAIT_TIME)
             self.driver.get('https://accounts.google.com/ServiceLogin')
@@ -333,13 +340,11 @@ class Uploader:
             except Exception as e:
                 text = self.driver.find_element_by_xpath('//body').text.strip()
 
-                if "t find your Google Account" in text:
+                if (
+                    "t find your Google Account" in text or
+                    "Account disabled" in text
+                ):
                     logger(instance=credential, data="Account doesn't exists.")
-                    logger(instance=credential, data='Reported fail')
-                    credential.report_fail()
-                    continue
-                elif "Account disabled" in text:
-                    logger(instance=credential, data="Account disabled.")
                     logger(instance=credential, data='Reported fail')
                     credential.report_fail()
                     continue
@@ -354,7 +359,10 @@ class Uploader:
                         self.driver.quit()
                         continue
 
-            self.biz_list = self.biz_list or self.service_biz.get_list()
+            self.biz_list = self.biz_list or self.service_biz.get_list(**kwargs)
+
+            if max_success and not self.can_continue(max_success, **kwargs):
+                return
 
             for index in range(PER_CREDENTIAL):
                 if file_index > 0:

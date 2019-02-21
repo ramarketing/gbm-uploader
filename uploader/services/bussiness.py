@@ -57,10 +57,3 @@ class BusinessService(BaseService):
     endpoint = '/mixer/business/'
     entity = Business
     entity_list = BusinessList
-
-    def get_list(self, **kwargs):
-        if 'can_use' not in kwargs:
-            kwargs['can_use'] = 1
-        if 'limit' not in kwargs:
-            kwargs['limit'] = 9
-        return super().get_list(**kwargs)
