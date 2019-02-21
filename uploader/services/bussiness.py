@@ -1,3 +1,4 @@
+from datetime import datetime
 import csv
 import os
 
@@ -26,6 +27,9 @@ class Business(BaseEntity):
         return line
 
     def report_success(self, credential):
+        if self.date_success:
+            return False
+        self.update(date_success=datetime.now())
         data = dict(
             credential=credential.pk
         )

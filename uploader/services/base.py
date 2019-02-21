@@ -1,3 +1,4 @@
+from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 
 import requests
@@ -24,7 +25,14 @@ class BaseEntity:
         return self.id
 
     def report_fail(self):
+        if self.date_fail:
+            return False
+        self.update(date_fail=datetime.now())
         return self.service.request('post', pk=self.pk, extra='set-fail')
+
+    def update(self, **kwargs):
+        for k in kwargs:
+            self.raw_data[k] = kwargs[k]
 
 
 class BaseEntityList:

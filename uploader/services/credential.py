@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 
 from services.base import (
@@ -10,6 +11,9 @@ class Credential(BaseEntity):
         return self.email
 
     def report_success(self):
+        if self.date_success:
+            return False
+        self.update(date_success=datetime.now())
         return self.service.request('post', pk=self.pk, extra='set-success')
 
 

@@ -314,7 +314,7 @@ class Uploader:
         return kwargs
 
     def handle(self, *args, **kwargs):
-        kwargs = self.clean_kwargs(kwargs)
+        kwargs = self.clean_kwargs(**kwargs)
 
         if 'max' in kwargs:
             try:
