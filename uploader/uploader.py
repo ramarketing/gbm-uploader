@@ -300,11 +300,22 @@ class Uploader:
 
     def can_continue(self, max_success, **kwargs):
         new_kwargs = kwargs.copy()
+        if 'can_use' in new_kwargs:
+            new_kwargs.pop('can_use')
         new_kwargs['is_success'] = True
         success_count = self.service_biz.get_list(**new_kwargs)
         return success_count.total_count < max_success
 
+    def clean_kwargs(self, **kwargs):
+        if 'limit' not in kwargs:
+            kwargs['limit'] = 9
+        if 'can_use' not in kwargs:
+            kwargs['can_use'] = 1
+        return kwargs
+
     def handle(self, *args, **kwargs):
+        kwargs = self.clean_kwargs(kwargs)
+
         if 'max' in kwargs:
             try:
                 max_success = int(kwargs.pop('max'))
@@ -314,6 +325,7 @@ class Uploader:
             max_success = 0
 
         if max_success and not self.can_continue(max_success, **kwargs):
+            logger(data="Completed.")
             return
 
         file_index = 0
@@ -362,6 +374,7 @@ class Uploader:
             self.biz_list = self.biz_list or self.service_biz.get_list(**kwargs)
 
             if max_success and not self.can_continue(max_success, **kwargs):
+                logger(data="Completed.")
                 return
 
             for index in range(PER_CREDENTIAL):
