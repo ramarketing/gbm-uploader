@@ -41,3 +41,28 @@ cd ~/Sites/gbm-uploader  # Recommended path
 env\Scripts\activate
 python uploader
 ```
+
+## Optional arguments
+1. You can use the argument "city" to obtain results on a specific city.
+
+```shell
+python manage.py city="Los Angeles"
+```
+
+The above command will only upload businesses from "Los Angeles".
+
+2. You can use the argument "max" in case you only want N success businesses.
+
+```shell
+python manage.py max=10
+```
+
+The above command will stop after finding 10 success businesses.
+
+3. You can combine both arguments
+
+```shell
+python manage.py city="Los Angeles" max=10
+```
+
+The above command will stop after finding 10 success businesses on "Los Angeles".
