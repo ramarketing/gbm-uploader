@@ -1,9 +1,12 @@
 import os
 import platform
 import time
+import traceback
 
 from selenium import webdriver
-from selenium.common.exceptions import ElementNotVisibleException
+from selenium.common.exceptions import (
+    ElementNotVisibleException, TimeoutException, WebDriverException
+)
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -21,7 +24,72 @@ logger = UploaderLogger()
 success_logger = UploaderLogger('success')
 
 
-class Uploader:
+class BaseManager:
+    def perform_action(func):
+        def wrapper(*args, **kwargs):
+            retry = 0
+            success = False
+
+            try:
+                max_retries = int(kwargs.get('max_retries', 10))
+            except ValueError:
+                max_retries = 10
+
+            try:
+                timeout = int(kwargs.get('timeout', 0))
+            except ValueError:
+                timeout = 0
+
+            if timeout:
+                time.sleep(timeout)
+
+            while not success:
+                retry += 1
+                logger(data={
+                    'action': func,
+                    'args': args,
+                    'retry': retry,
+                })
+
+                if retry == max_retries:
+                    raise TimeoutException
+
+                try:
+                    func(*args, **kwargs)
+                    success = True
+                except (TimeoutException, WebDriverException):
+                    time.sleep(1)
+
+            return success
+
+        return wrapper
+
+    @perform_action
+    def fill_input(self, by, selector, content, timeout=0, max_retries=10):
+        element = self.driver.find_element(by, selector)
+        element.send_keys(content)
+
+    @perform_action
+    def click_element(self, by, selectors, timeout=0, max_retries=10):
+        def execute(selector):
+            element = self.wait.until(
+                EC.element_to_be_clickable(
+                    (by, selector)
+                )
+            )
+            element.click()
+
+        if isinstance(selectors, (list, tuple)):
+            for selector in selectors:
+                try:
+                    return execute(selector)
+                except Exception:
+                    pass
+        else:
+            return execute(selectors)
+
+
+class Uploader(BaseManager):
     service_cred = CredentialService()
     service_biz = BusinessService()
     biz_list = None
@@ -92,92 +160,52 @@ class Uploader:
             pass
 
         self.driver.get(
-            'https://business.google.com/manage/?noredirect=1#/upload'
+            'https://business.google.com/locations'
+            #'https://business.google.com/manage/?noredirect=1#/upload'
         )
 
-        try:
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.XPATH, '//md-checkbox[@type="checkbox"]')
-                )
-            )
-            element.click()
-            element = self.driver.find_element_by_xpath(
-                '//md-dialog-actions/button'
-            )
-            element.click()
-        except Exception:
-            pass
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div/content/span/span[2]'
+        )
 
-        try:
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.NAME, 'spreadsheet')
-                )
-            )
-        except Exception:
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="js"]/div[10]/div/div/content[2]/div[2]',
+                '//*[@id="js"]/div[11]/div/div/content[2]/div[2]'
+            ),
+            timeout=3
+        )
 
-            element = self.driver.find_element_by_name('spreadsheet')
-        element.send_keys(file)
+        self.fill_input(By.NAME, 'Filedata', file, timeout=5)
 
-        try:
-            element = self.wait.until(
-                EC.visibility_of_element_located(
-                    (By.ID, 'lm-conf-changes-btn-submit')
-                )
-            )
-            element.click()
-        except ElementNotVisibleException:
-            try:
-                element = self.wait.until(
-                    EC.visibility_of_element_located(
-                        (By.ID, 'lm-conf-changes-btn-got-it')
-                    )
-                )
-                element.click()
-                raise Exception('File uploaded already.')
-            except ElementNotVisibleException:
-                pass
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
+            timeout=20
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
+            timeout=5
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div',
+            timeout=20
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+            timeout=5
+        )
 
-            raise Exception('Submit button not found.')
-
-    def do_preparation(self):
-        try:
-            element = self.wait.until(
-                EC.visibility_of_element_located(
-                    (By.ID, 'lm-tip-got-it-btn')
-                )
-            )
-            self.driver.execute_script("arguments[0].click();", element)
-
-        except Exception as e:
-            pass
-
-        try:
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.XPATH, '//button[@aria-label="List view"]')
-                )
-            )
-            self.driver.execute_script("arguments[0].click();", element)
-        except Exception as e:
-            pass
-
-        try:
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.ID, 'lm-list-view-promo-use-list-btn')
-                )
-            )
-            self.driver.execute_script("arguments[0].click();", element)
-        except Exception:
-            pass
+        self.driver.get('https://business.google.com/locations')
 
     def do_verification(self, credential):
         self.active_list = []
-        rows = self.driver.find_elements_by_css_selector(
-            'div.lm-list-data-row'
-        )
+        rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         ActionChains(self.driver) \
             .move_to_element(rows[-1]) \
@@ -192,10 +220,11 @@ class Uploader:
         tab_index = len(self.active_list)
 
         for item in self.active_list:
-            element = item['element'].find_element_by_css_selector(
-                'div.lm-listing-data.lm-pointer'
-            )
-            self.driver.execute_script("arguments[0].click();", element)
+            element = item['element'].find_element_by_xpath('content/div/div')
+            if platform.system() == 'Windows':
+                ActionChains(self.driver).key_down(Keys.CONTROL).click(element).key_up(Keys.CONTROL).perform()
+            else:
+                ActionChains(self.driver).key_down(Keys.COMMAND).click(element).key_up(Keys.COMMAND).perform()
             item['tab_index'] = tab_index
             tab_index -= 1
 
@@ -247,7 +276,6 @@ class Uploader:
                     )
                 )
 
-
         for i in reversed(range(1, len(self.driver.window_handles))):
             self.driver.switch_to_window(self.driver.window_handles[i])
             self.driver.close()
@@ -265,23 +293,22 @@ class Uploader:
         except Exception:
             pass
 
-        index, name, address, phone, status, action = row.text.split('\n')
+        columns = row.find_elements(By.XPATH, 'td')
+        empty, index, name_address, status, action = [c.text for c in columns]
+        name, address = name_address.split('\n')
 
         if status.upper() == 'PUBLISHED':
             return
 
-        element = row.find_element_by_css_selector(
-            'div.lm-action-col'
-        )
+        element = columns[-1]
         biz = self.biz_list.get_by_name(name)
 
-        if action == 'Get verified' and not self.in_active_list(biz):
+        if action == 'Verify now' and not self.in_active_list(biz):
             logger(instance=biz, data={'action': action, 'status': status})
             self.active_list.append(dict(
                 biz=biz,
                 element=element,
                 row=row,
-                phone=phone,
             ))
         else:
             biz.report_fail()
@@ -312,6 +339,50 @@ class Uploader:
         if 'can_use' not in kwargs:
             kwargs['can_use'] = 1
         return kwargs
+
+    def delete_all(self):
+        self.driver.get('https://business.google.com/locations')
+        rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
+
+        if not rows:
+            return
+
+        selected = 0
+
+        for row in rows:
+            columns = row.find_elements(By.XPATH, 'td')
+            empty, index, name_address, status, action = [c.text for c in columns]
+            name, address = name_address.split('\n')
+
+            biz = self.biz_list.get_by_name(name)
+
+            if biz.date_success:
+                continue
+
+            column = columns[0]
+
+            element = column.find_element_by_xpath('content/div')
+            element.click()
+            selected += 1
+
+        if not selected:
+            return
+
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span'
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="js"]/div[10]/div/div/content[8]',
+            timeout=3
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]',
+            timeout=5
+        )
+        time.sleep(30)
 
     def handle(self, *args, **kwargs):
         kwargs = self.clean_kwargs(**kwargs)
@@ -386,14 +457,18 @@ class Uploader:
 
                 try:
                     self.do_upload(file)
-                    self.do_preparation()
                     has_success = self.do_verification(credential)
                     self.driver.switch_to_window(self.driver.window_handles[0])
 
                     if has_success:
+                        self.delete_all()
                         break
+                    else:
+                        self.delete_all()
                 except Exception as err:
                     logger(instance=err, data=err)
+                    print(traceback.format_exc())
+                    self.delete_all()
 
                 file_index += 1
 
