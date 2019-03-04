@@ -356,7 +356,7 @@ class Uploader(BaseManager):
 
             biz = self.biz_list.get_by_name(name)
 
-            if biz.date_success:
+            if not biz or biz.date_success:
                 continue
 
             column = columns[0]
