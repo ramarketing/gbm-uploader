@@ -26,7 +26,7 @@ success_logger = UploaderLogger('success')
 
 class BaseManager:
     def perform_action(func):
-        def wrapper(by, selector, *args, **kwargs):
+        def wrapper(self, by, selector, *args, **kwargs):
             retry = 0
             success = False
 
@@ -45,11 +45,6 @@ class BaseManager:
 
             while not success:
                 retry += 1
-                logger(data={
-                    'action': func.__name__,
-                    'args': args,
-                    'retry': retry,
-                })
 
                 if retry >= max_retries:
                     raise TimeoutException
@@ -58,7 +53,13 @@ class BaseManager:
                     if isinstance(selector, (list, tuple)):
                         for s in selector:
                             try:
-                                func(by, s, *args, **kwargs)
+                                logger(data={
+                                    'action': func.__name__,
+                                    'selector': s,
+                                    'args': args,
+                                    'retry': retry,
+                                })
+                                func(self, by, s, *args, **kwargs)
                                 success = True
                                 break
                             except Exception as e:
@@ -67,7 +68,13 @@ class BaseManager:
                         if not success:
                             raise TimeoutException
                     else:
-                        func(by, selector, *args, **kwargs)
+                        logger(data={
+                            'action': func.__name__,
+                            'selector': selector,
+                            'args': args,
+                            'retry': retry,
+                        })
+                        func(self, by, selector, *args, **kwargs)
                         success=True
                 except (TimeoutException, WebDriverException):
                     time.sleep(1)
@@ -77,13 +84,13 @@ class BaseManager:
         return wrapper
 
     @perform_action
-    def fill_input(self, by, selector, content, source=None, **kwargs):
+    def fill_input(self, by, selector, content, source=None, *args, **kwargs):
         source = source or self.driver
         element = source.find_element(by, selector)
         element.send_keys(content)
 
     @perform_action
-    def click_element(self, by, selector, source=None, **kwargs):
+    def click_element(self, by, selector, source=None, *args, **kwargs):
         source = source or self.driver
         element = source.find_element(by, selector)
         element.click()
