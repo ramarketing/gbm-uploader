@@ -26,7 +26,7 @@ success_logger = UploaderLogger('success')
 
 class BaseManager:
     def perform_action(func):
-        def wrapper(*args, **kwargs):
+        def wrapper(by, selector, *args, **kwargs):
             retry = 0
             success = False
 
@@ -46,17 +46,29 @@ class BaseManager:
             while not success:
                 retry += 1
                 logger(data={
-                    'action': func,
+                    'action': func.__name__,
                     'args': args,
                     'retry': retry,
                 })
 
-                if retry == max_retries:
+                if retry >= max_retries:
                     raise TimeoutException
 
                 try:
-                    func(*args, **kwargs)
-                    success = True
+                    if isinstance(selector, (list, tuple)):
+                        for s in selector:
+                            try:
+                                func(by, s, *args, **kwargs)
+                                success = True
+                                break
+                            except Exception as e:
+                                pass
+
+                        if not success:
+                            raise TimeoutException
+                    else:
+                        func(by, selector, *args, **kwargs)
+                        success=True
                 except (TimeoutException, WebDriverException):
                     time.sleep(1)
 
@@ -65,28 +77,16 @@ class BaseManager:
         return wrapper
 
     @perform_action
-    def fill_input(self, by, selector, content, timeout=0, max_retries=10):
-        element = self.driver.find_element(by, selector)
+    def fill_input(self, by, selector, content, source=None, **kwargs):
+        source = source or self.driver
+        element = source.find_element(by, selector)
         element.send_keys(content)
 
     @perform_action
-    def click_element(self, by, selectors, timeout=0, max_retries=10):
-        def execute(selector):
-            element = self.wait.until(
-                EC.element_to_be_clickable(
-                    (by, selector)
-                )
-            )
-            element.click()
-
-        if isinstance(selectors, (list, tuple)):
-            for selector in selectors:
-                try:
-                    return execute(selector)
-                except Exception:
-                    pass
-        else:
-            return execute(selectors)
+    def click_element(self, by, selector, source=None, **kwargs):
+        source = source or self.driver
+        element = source.find_element(by, selector)
+        element.click()
 
 
 class Uploader(BaseManager):
@@ -400,77 +400,87 @@ class Uploader(BaseManager):
             return
 
         file_index = 0
+        credential_page = 0
         credential_list = self.service_cred.get_list(**kwargs)
 
-        for credential in credential_list:
-            if platform.system() == 'Windows':
-                self.driver = webdriver.Chrome(
-                    executable_path=os.path.join(BASE_DIR, 'chromedriver'),
-                )
-            else:
-                self.driver = webdriver.Chrome()
+        while credential_list.count:
+            credential_page += 1
 
-            self.wait = WebDriverWait(self.driver, WAIT_TIME)
-            self.driver.get('https://accounts.google.com/ServiceLogin')
-
-            try:
-                self.do_login(credential)
-            except CredentialInvalid:
-                logger(instance=credential, data='Reported fail')
-                credential.report_fail()
-                self.driver.quit()
-                continue
-            except Exception as e:
-                text = self.driver.find_element_by_xpath('//body').text.strip()
-
-                if (
-                    "t find your Google Account" in text or
-                    "Account disabled" in text
-                ):
-                    logger(instance=credential, data="Account doesn't exists.")
-                    logger(instance=credential, data='Reported fail')
-                    credential.report_fail()
-                    continue
-                else:
-                    self.driver.get(
-                        'https://business.google.com/manage/?noredirect=1#/upload'
+            for credential in credential_list:
+                if platform.system() == 'Windows':
+                    self.driver = webdriver.Chrome(
+                        executable_path=os.path.join(BASE_DIR, 'chromedriver'),
                     )
-                    if not self.driver.current_url.startswith(
-                        'https://business.google.com/'
-                    ):
-                        logger(instance=credential, data='Pass')
-                        self.driver.quit()
-                        continue
+                else:
+                    self.driver = webdriver.Chrome()
 
-            self.biz_list = self.biz_list or self.service_biz.get_list(**kwargs)
-
-            if max_success and not self.can_continue(max_success, **kwargs):
-                logger(data="Completed.")
-                return
-
-            for index in range(PER_CREDENTIAL):
-                if file_index > 0:
-                    self.biz_list.get_next_page()
-
-                file = self.biz_list.create_csv()
-                logger(instance=self.biz_list, data={'file': file})
+                self.wait = WebDriverWait(self.driver, WAIT_TIME)
+                self.driver.get('https://accounts.google.com/ServiceLogin')
 
                 try:
-                    self.do_upload(file)
-                    has_success = self.do_verification(credential)
-                    self.driver.switch_to_window(self.driver.window_handles[0])
+                    self.do_login(credential)
+                except CredentialInvalid:
+                    logger(instance=credential, data='Reported fail')
+                    credential.report_fail()
+                    self.driver.quit()
+                    continue
+                except Exception as e:
+                    text = self.driver.find_element_by_xpath('//body').text.strip()
 
-                    if has_success:
-                        self.delete_all()
-                        break
+                    if (
+                        "t find your Google Account" in text or
+                        "Account disabled" in text
+                    ):
+                        logger(instance=credential, data="Account doesn't exists.")
+                        logger(instance=credential, data='Reported fail')
+                        credential.report_fail()
+                        continue
                     else:
+                        self.driver.get(
+                            'https://business.google.com/manage/?noredirect=1#/upload'
+                        )
+                        if not self.driver.current_url.startswith(
+                            'https://business.google.com/'
+                        ):
+                            logger(instance=credential, data='Pass')
+                            self.driver.quit()
+                            continue
+
+                self.biz_list = self.biz_list or self.service_biz.get_list(**kwargs)
+
+                if max_success and not self.can_continue(max_success, **kwargs):
+                    logger(data="Completed.")
+                    return
+
+                for index in range(PER_CREDENTIAL):
+                    if file_index > 0:
+                        self.biz_list.get_next_page()
+
+                    file = self.biz_list.create_csv()
+                    logger(instance=self.biz_list, data={'file': file})
+
+                    try:
+                        self.do_upload(file)
+                        has_success = self.do_verification(credential)
+                        self.driver.switch_to_window(self.driver.window_handles[0])
+
+                        if has_success:
+                            self.delete_all()
+                            break
+                        else:
+                            self.delete_all()
+                    except Exception as err:
+                        logger(instance=err, data=err)
+                        print(traceback.format_exc())
                         self.delete_all()
-                except Exception as err:
-                    logger(instance=err, data=err)
-                    print(traceback.format_exc())
-                    self.delete_all()
 
-                file_index += 1
+                    file_index += 1
 
-            credential.report_success()
-            self.driver.quit()
+                credential.report_success()
+                self.driver.quit()
+
+            if credential_list.next:
+                credential_list.get_next_page()
+            else:
+                logger(data="Process has finished successfully.")
+                break
