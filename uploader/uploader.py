@@ -47,7 +47,7 @@ class BaseManager:
                 retry += 1
 
                 if retry > max_retries:
-                    import pdb; pdb.set_trace()
+                    # import pdb; pdb.set_trace()
                     raise TimeoutException
 
                 try:
@@ -201,7 +201,8 @@ class Uploader(BaseManager):
             By.XPATH,
             (
                 '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]'
+                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
+                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
             ),
             timeout=5
         )
@@ -213,8 +214,9 @@ class Uploader(BaseManager):
         self.click_element(
             By.XPATH,
             (
-                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div'
+                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]'
             ),
             timeout=5
         )
