@@ -64,7 +64,6 @@ class BaseManager:
                                 break
                             except Exception as e:
                                 pass
-
                         if not success:
                             raise TimeoutException
                     else:
@@ -179,6 +178,7 @@ class Uploader(BaseManager):
         self.click_element(
             By.XPATH,
             (
+                '//*[@id="js"]/div[9]/div/div/content[2]/div[2]',
                 '//*[@id="js"]/div[10]/div/div/content[2]/div[2]',
                 '//*[@id="js"]/div[11]/div/div/content[2]/div[2]'
             ),
