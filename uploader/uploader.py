@@ -46,7 +46,8 @@ class BaseManager:
             while not success:
                 retry += 1
 
-                if retry >= max_retries:
+                if retry > max_retries:
+                    import pdb; pdb.set_trace()
                     raise TimeoutException
 
                 try:
@@ -92,6 +93,10 @@ class BaseManager:
     def click_element(self, by, selector, source=None, *args, **kwargs):
         source = source or self.driver
         element = source.find_element(by, selector)
+        disabled = element.get_attribute('aria-disabled')
+        if disabled == 'true':
+            time.sleep(5)
+            raise WebDriverException
         element.click()
 
 
@@ -194,7 +199,10 @@ class Uploader(BaseManager):
         )
         self.click_element(
             By.XPATH,
-            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
+            (
+                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
+                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]'
+            ),
             timeout=5
         )
         self.click_element(
@@ -204,7 +212,10 @@ class Uploader(BaseManager):
         )
         self.click_element(
             By.XPATH,
-            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+            (
+                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
+                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div'
+            ),
             timeout=5
         )
 
@@ -470,12 +481,10 @@ class Uploader(BaseManager):
                         self.do_upload(file)
                         has_success = self.do_verification(credential)
                         self.driver.switch_to_window(self.driver.window_handles[0])
+                        self.delete_all()
 
                         if has_success:
-                            self.delete_all()
                             break
-                        else:
-                            self.delete_all()
                     except Exception as err:
                         logger(instance=err, data=err)
                         print(traceback.format_exc())
