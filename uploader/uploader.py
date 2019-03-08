@@ -203,6 +203,7 @@ class Uploader(BaseManager):
                 '//*[@id="js"]/div[9]/div/div[2]/div[3]/div'
             )
             self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div[2]/div[2]/div[1]')
+            self.click_element(By.XPATH, '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div')
             load_csv()
 
         self.click_element(
