@@ -296,6 +296,9 @@ class Uploader(BaseManager):
         self.active_list = []
         rows = self.driver.find_elements_by_xpath('//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
 
+        if not rows:
+            return
+
         for row in rows[1:]:
             self.do_verification_row(row)
 
@@ -309,7 +312,8 @@ class Uploader(BaseManager):
             tab_index -= 1
 
             try:
-                item['element'].click()
+                element = item['element']
+                self.driver.execute_script("arguments[0].click();", element)
             except WebDriverException:
                 continue
 
