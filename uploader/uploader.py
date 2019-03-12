@@ -564,7 +564,10 @@ class Uploader(BaseManager):
 
                 for index in range(PER_CREDENTIAL):
                     if file_index > 0:
-                        self.biz_list.get_next_page()
+                        if self.biz_list:
+                            self.biz_list.get_next_page()
+                        else:
+                            self.biz_list = self.service_biz.get_list(**kwargs)
 
                     file = self.biz_list.create_csv()
                     logger(instance=self.biz_list, data={'file': file})
