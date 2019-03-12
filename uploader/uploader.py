@@ -488,6 +488,7 @@ class Uploader(BaseManager):
         self.click_element(By.XPATH, '//*[@id="lm-title-bars-remove-btn"]', timeout=3)
         self.click_element(By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
         time.sleep(5)
+        self.biz_list = None
 
     def handle(self, *args, **kwargs):
         kwargs = self.clean_kwargs(**kwargs)
@@ -573,7 +574,6 @@ class Uploader(BaseManager):
                         has_success = self.do_verification(credential)
                         self.driver.switch_to_window(self.driver.window_handles[0])
                         self.delete_all()
-
                         if has_success:
                             break
                     except Exception as err:
