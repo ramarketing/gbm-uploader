@@ -115,14 +115,17 @@ class Uploader(BaseManager):
     def do_login(self, credential):
         logger(instance=credential)
 
-        element = self.driver.find_element_by_id('identifierId')
-        element.send_keys(credential.email + Keys.RETURN)
-        time.sleep(1)
-
-        element = self.wait.until(
-            EC.presence_of_element_located((By.NAME, 'password'))
+        self.fill_input(
+            By.ID,
+            'identifierId',
+            credential.email + Keys.RETURN
         )
-        element.send_keys(credential.password + Keys.RETURN)
+        self.fill_input(
+            By.NAME,
+            'password',
+            credential.password + Keys.RETURN,
+            timeout=3
+        )
         time.sleep(1)
 
         try:
@@ -134,19 +137,18 @@ class Uploader(BaseManager):
             pass
 
         try:
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.XPATH, '//div[@data-challengetype="12"]')
-                )
+            self.click_element(
+                By.XPATH,
+                '//div[@data-challengetype="12"]',
+                max_retries=5
             )
-            element.click()
-            element = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.NAME, 'knowledgePreregisteredEmailResponse')
-                )
+            self.fill_input(
+                By.NAME,
+                'knowledgePreregisteredEmailResponse',
+                credential.recovery_email + Keys.RETURN,
+                timeout=5
             )
-            element.send_keys(credential.recovery_email + Keys.RETURN)
-        except Exception:
+        except TimeoutException:
             pass
 
         try:
@@ -193,17 +195,32 @@ class Uploader(BaseManager):
                 ),
                 timeout=3
             )
-            self.fill_input(By.NAME, 'Filedata', file, timeout=5)
+            self.fill_input(
+                By.NAME,
+                'Filedata',
+                file,
+                timeout=5,
+                max_retries=5,
+            )
 
         try:
             load_csv()
         except TimeoutException:
             self.click_element(
                 By.XPATH,
-                '//*[@id="js"]/div[9]/div/div[2]/div[3]/div'
+                '//*[@id="js"]/div[9]/div/div[2]/div[3]/div',
+                raise_exception=False
             )
-            self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div[2]/div[2]/div[1]')
-            self.click_element(By.XPATH, '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div')
+            self.click_element(
+                By.XPATH,
+                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div[2]/div[2]/div[1]',
+                raise_exception=False
+            )
+            self.click_element(
+                By.XPATH,
+                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                raise_exception=False
+            )
             load_csv()
 
         self.click_element(
@@ -282,14 +299,20 @@ class Uploader(BaseManager):
             raise_exception=False,
             max_retries=3
         )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="lm-listings-pager-menu-btn"]'
-        )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="lm-listings-pager-menu-item-100"]'
-        )
+        def change_pagination():
+            self.click_element(
+                By.XPATH,
+                '//*[@id="lm-listings-pager-menu-btn"]'
+            )
+            self.click_element(
+                By.XPATH,
+                '//*[@id="lm-listings-pager-menu-item-100"]'
+            )
+        try:
+            change_pagination()
+        except TimeoutException:
+            self.click_element(By.XPATH, '//*[@id="bulkInsightsHighlight"]/div/div/div[2]/div[3]')
+            change_pagination()
         self.is_cleanup = True
 
     def do_verification(self, credential):
@@ -489,7 +512,7 @@ class Uploader(BaseManager):
             credential_page += 1
 
             for credential in credential_list:
-                if credential.date_success:
+                if any([credential.date_success, credential.date_fail]):
                     continue
 
                 if platform.system() == 'Windows':
@@ -554,6 +577,7 @@ class Uploader(BaseManager):
                         if has_success:
                             break
                     except Exception as err:
+                        # import pdb; pdb.set_trace()
                         logger(instance=err, data=err)
                         print(traceback.format_exc())
                         self.delete_all()

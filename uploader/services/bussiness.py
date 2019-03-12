@@ -16,9 +16,7 @@ class Business(BaseEntity):
     def get_csv_line(self, counter):
         line = []
         for field in CSV_FIELDS:
-            if field == 'id':
-                value = counter
-            elif field and hasattr(self, field):
+            if field and hasattr(self, field):
                 value = getattr(self, field)
             else:
                 value = ''
@@ -49,6 +47,8 @@ class BusinessList(BaseEntityList):
             writer.writerow(CSV_HEADER)
 
             for biz in self:
+                if any([biz.date_success, biz.date_fail]):
+                    continue
                 writer.writerow(biz.get_csv_line(counter))
                 counter += 1
         return path
