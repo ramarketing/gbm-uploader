@@ -478,8 +478,10 @@ class Uploader(BaseManager):
             if not biz or biz.date_success:
                 continue
 
-            self.click_element(By.CSS_SELECTOR, 'md-checkbox', source=row, raise_exception=False, max_retries=2)
-            selected += 1
+            try:
+                self.click_element(By.CSS_SELECTOR, 'md-checkbox', source=row, max_retries=2)
+            except TimeoutException:
+                selected += 1
 
         if not selected:
             return
@@ -487,6 +489,7 @@ class Uploader(BaseManager):
         self.click_element(By.XPATH, '//*[@id="lm-title-bars-see-options-btn"]')
         self.click_element(By.XPATH, '//*[@id="lm-title-bars-remove-btn"]', timeout=3)
         self.click_element(By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
+
         time.sleep(5)
         self.biz_list = None
 
