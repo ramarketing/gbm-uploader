@@ -482,7 +482,7 @@ class Uploader(BaseManager):
                 self.click_element(By.CSS_SELECTOR, 'md-checkbox', source=row, max_retries=2)
                 selected += 1
             except TimeoutException:
-                selected += 1
+                pass
 
         if not selected:
             return
