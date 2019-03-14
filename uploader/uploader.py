@@ -181,6 +181,13 @@ class Uploader(BaseManager):
                 'https://business.google.com/locations'
             )
 
+            body = self.driver.find_element(By.CSS_SELECTOR, 'body')
+            if "You haven't added any locations" not in body.text:
+                self.delete_all(force=True, clean_listing=False)
+                self.driver.get(
+                    'https://business.google.com/locations'
+                )
+
             self.click_element(
                 By.XPATH,
                 '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div/content/span/span[2]'
@@ -455,7 +462,7 @@ class Uploader(BaseManager):
             kwargs['can_use'] = 1
         return kwargs
 
-    def delete_all(self):
+    def delete_all(self, force=False, clean_listing=True):
         self.driver.get('https://business.google.com/manage/?noredirect=1#/list')
         self.gbm_cleanup()
 
@@ -473,16 +480,40 @@ class Uploader(BaseManager):
             except ValueError:
                 continue
 
-            biz = self.biz_list.get_by_name(name)
+            if not force:
+                biz = self.biz_list.get_by_name(name)
 
-            if not biz or biz.date_success:
-                continue
+                if not biz or biz.date_success:
+                    continue
 
             try:
-                self.click_element(By.CSS_SELECTOR, 'md-checkbox', source=row, max_retries=2)
+                self.click_element(
+                    By.CSS_SELECTOR,
+                    'md-checkbox',
+                    source=row,
+                    max_retries=2
+                )
                 selected += 1
             except TimeoutException:
-                pass
+                self.click_element(
+                    By.XPATH,
+                    '//*[@id="verifyDialog"]/md-dialog-content/div[1]/div/md-icon',
+                    max_retries=2,
+                    raise_exception=False
+                )
+                self.click_element(
+                    By.XPATH,
+                    '//*[@id="bulkInsightsHighlight"]/div/div/div[2]/div[3]',
+                    max_retries=2,
+                    raise_exception=False
+                )
+                self.click_element(
+                    By.CSS_SELECTOR,
+                    'md-checkbox',
+                    source=row,
+                    max_retries=2
+                )
+                selected += 1
 
         if not selected:
             return
@@ -492,7 +523,8 @@ class Uploader(BaseManager):
         self.click_element(By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
 
         time.sleep(5)
-        self.biz_list = None
+        if clean_listing:
+            self.biz_list = None
 
     def handle(self, *args, **kwargs):
         kwargs = self.clean_kwargs(**kwargs)
