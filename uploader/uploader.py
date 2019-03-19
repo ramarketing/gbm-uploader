@@ -318,7 +318,12 @@ class Uploader(BaseManager):
         try:
             change_pagination()
         except TimeoutException:
-            self.click_element(By.XPATH, '//*[@id="bulkInsightsHighlight"]/div/div/div[2]/div[3]')
+            self.click_element(
+                By.XPATH,
+                '//*[@id="bulkInsightsHighlight"]/div/div/div[2]/div[3]',
+                max_retries=5,
+                raise_exception=False,
+            )
             change_pagination()
         self.is_cleanup = True
 
