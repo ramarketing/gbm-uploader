@@ -324,7 +324,11 @@ class Uploader(BaseManager):
                 max_retries=5,
                 raise_exception=False,
             )
-            change_pagination()
+            try:
+                change_pagination()
+            except TimeoutException:
+                pass
+
         self.is_cleanup = True
 
     def do_verification(self, credential):
