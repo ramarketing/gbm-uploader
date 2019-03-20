@@ -517,6 +517,12 @@ class Uploader(BaseManager):
                     raise_exception=False
                 )
                 self.click_element(
+                    By.XPATH,
+                    '//*[@id="lm-list-view-promo-use-list-btn"]',
+                    max_retries=2,
+                    raise_exception=False
+                )
+                self.click_element(
                     By.CSS_SELECTOR,
                     'md-checkbox',
                     source=row,
