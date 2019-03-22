@@ -260,7 +260,7 @@ class Uploader(BaseManager):
 
         body = self.driver.find_element(By.CSS_SELECTOR, 'body')
         if "You haven't added any locations" in body.text:
-            raise CredentialInvalid
+            raise EmptyUpload
 
 
     def do_verification(self, credential):
