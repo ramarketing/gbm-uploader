@@ -50,10 +50,11 @@ class BaseManager:
 
                 if retry > max_retries:
                     if raise_exception:
+                        '''
                         if DEBUG:
                             import pdb; pdb.set_trace()
-                        else:
-                            raise TimeoutException
+                        '''
+                        raise TimeoutException
                     else:
                         return success
 
@@ -189,10 +190,7 @@ class Uploader(BaseManager):
                     'https://business.google.com/locations'
                 )
 
-            self.click_element(
-                By.XPATH,
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div/content/span/span[2]'
-            )
+            self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div')
 
             self.click_element(
                 By.XPATH,
@@ -545,7 +543,7 @@ class Uploader(BaseManager):
                         if has_success:
                             break
                     except Exception as err:
-                        import pdb; pdb.set_trace()
+                        # import pdb; pdb.set_trace()
                         logger(instance=err, data=err)
                         print(traceback.format_exc())
                         self.delete_all()
