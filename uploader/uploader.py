@@ -13,7 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from exceptions import CredentialInvalid
+from exceptions import CredentialInvalid, EmptyUpload
 from services import BusinessService, CredentialService
 from config import BASE_DIR, DEBUG, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
 from constants import TEXT_PHONE_VERIFICATION
@@ -31,9 +31,9 @@ class BaseManager:
             success = False
 
             try:
-                max_retries = int(kwargs.get('max_retries', 10))
+                max_retries = int(kwargs.get('max_retries', 5))
             except ValueError:
-                max_retries = 10
+                max_retries = 5
 
             try:
                 timeout = int(kwargs.get('timeout', 0))
@@ -141,8 +141,7 @@ class Uploader(BaseManager):
         try:
             self.click_element(
                 By.XPATH,
-                '//div[@data-challengetype="12"]',
-                max_retries=5
+                '//div[@data-challengetype="12"]'
             )
             self.fill_input(
                 By.NAME,
@@ -170,7 +169,7 @@ class Uploader(BaseManager):
         )
 
     def do_upload(self, file):
-        self.driver.get('https://www.google.com/')
+        self.driver.get('https://business.google.com/locations')
 
         try:
             alert = self.driver.switch_to_alert()
@@ -179,8 +178,6 @@ class Uploader(BaseManager):
             pass
 
         def load_csv():
-            self.driver.get('https://business.google.com/locations')
-
             body = self.driver.find_element(By.CSS_SELECTOR, 'body')
             if "You haven't added any locations" not in body.text:
                 self.delete_all(force=True, clean_listing=False)
@@ -203,8 +200,7 @@ class Uploader(BaseManager):
                 By.NAME,
                 'Filedata',
                 file,
-                timeout=5,
-                max_retries=5,
+                timeout=5
             )
 
         try:
@@ -322,7 +318,10 @@ class Uploader(BaseManager):
                     option = self.driver.find_elements(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div[1]/div/content/label')
                     option = option[-1].find_element(By.XPATH, 'div')
                     option.click()
-                    self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div[2]/button', max_retries=3)
+                    self.click_element(
+                        By.XPATH,
+                        '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div[2]/button'
+                    )
                     time.sleep(5)
                 except Exception:
                     pass
@@ -453,9 +452,20 @@ class Uploader(BaseManager):
         if not selected:
             return
 
-        self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span/div')
-        self.click_element(By.XPATH, '//*[@id="js"]/div[9]/div/div/content[8]', timeout=3)
-        self.click_element(By.XPATH, '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]', timeout=5)
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span/div'
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="js"]/div[9]/div/div/content[8]',
+            timeout=3
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]',
+            timeout=5
+        )
 
         time.sleep(5)
         if clean_listing:
@@ -550,9 +560,10 @@ class Uploader(BaseManager):
                         self.delete_all()
                         if has_success:
                             break
-                    except CredentialInvalid:
-                        has_success = False
-                        break
+                    except EmptyUpload:
+                        for biz in self.biz_list:
+                            biz.report_fail()
+                        continue
                     except Exception as err:
                         if PDB_DEBUG:
                             import pdb; pdb.set_trace()
