@@ -495,11 +495,12 @@ class Uploader(BaseManager):
 
         while credential_list.count:
             credential_page += 1
-            upload_errors = 0
 
             for credential in credential_list:
                 if any([credential.date_success, credential.date_fail]):
                     continue
+
+                upload_errors = 0
 
                 if platform.system() == 'Windows':
                     self.driver = webdriver.Chrome(
