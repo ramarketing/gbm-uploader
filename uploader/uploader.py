@@ -180,9 +180,7 @@ class Uploader(BaseManager):
             pass
 
         def load_csv():
-            self.driver.get(
-                'https://business.google.com/locations'
-            )
+            self.driver.get('https://business.google.com/locations')
 
             body = self.driver.find_element(By.CSS_SELECTOR, 'body')
             if "You haven't added any locations" not in body.text:
@@ -264,84 +262,16 @@ class Uploader(BaseManager):
             raise_exception=False,
         )
 
-        self.driver.get('https://business.google.com/manage/?noredirect=1#/list')
-        self.gbm_cleanup()
-
-    def gbm_cleanup(self):
-        time.sleep(5)
-
-        if self.is_cleanup:
-            return
-
-        self.click_element(
-            By.XPATH,
-            '//*[@id="dialogContent_10"]/div[3]/md-checkbox',
-            raise_exception=False,
-            max_retries=3
-        )
-        self.click_element(
-            By.XPATH,
-            '/html/body/div[27]/md-dialog/md-dialog-actions/button',
-            raise_exception=False,
-            max_retries=3
-        )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="lm-listings-switch-view-container"]/div[1]/div/div/div/div[2]/div[3]',
-            raise_exception=False,
-            max_retries=3
-        )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="lm-listings-switch-view-btn-1"]',
-            raise_exception=False,
-            max_retries=3
-        )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="lm-list-view-promo-use-list-btn"]',
-            raise_exception=False,
-            max_retries=3
-        )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="lm-listings-switch-view-container"]/div[1]/div/div/div/div[2]/div[3]',
-            raise_exception=False,
-            max_retries=3
-        )
-        def change_pagination():
-            self.click_element(
-                By.XPATH,
-                '//*[@id="lm-listings-pager-menu-btn"]'
-            )
-            self.click_element(
-                By.XPATH,
-                '//*[@id="lm-listings-pager-menu-item-100"]'
-            )
-        try:
-            change_pagination()
-        except TimeoutException:
-            self.click_element(
-                By.XPATH,
-                '//*[@id="bulkInsightsHighlight"]/div/div/div[2]/div[3]',
-                max_retries=5,
-                raise_exception=False,
-            )
-            try:
-                change_pagination()
-            except TimeoutException:
-                pass
-
-        self.is_cleanup = True
-
     def do_verification(self, credential):
         self.active_list = []
-        rows = self.driver.find_elements_by_xpath('//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
+        rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
             return
 
-        for row in rows[1:]:
+        selected = 0
+
+        for row in rows:
             self.do_verification_row(row)
 
         if len(self.active_list) == 0:
@@ -352,12 +282,16 @@ class Uploader(BaseManager):
         for item in self.active_list:
             item['tab_index'] = tab_index
             tab_index -= 1
+            element = item['element']
 
-            try:
-                element = item['element']
-                self.driver.execute_script("arguments[0].click();", element)
-            except WebDriverException:
-                continue
+            if platform.system() == 'Darwin':
+                ActionChains(self.driver).key_down(Keys.COMMAND).click(element).key_up(Keys.COMMAND).perform()
+            else:
+                ActionChains(self.driver) \
+                    .key_down(Keys.CONTROL) \
+                    .click(element) \
+                    .key_up(Keys.CONTROL) \
+                    .perform()
 
         has_success = False
 
@@ -424,20 +358,26 @@ class Uploader(BaseManager):
         return has_success
 
     def do_verification_row(self, row):
+        text = [i.text for i in row.find_elements_by_xpath('td')]
+
         try:
-            index, name, address, phone_number, status, action = row.text.split('\n')
+            empty, index, name_address, status, action = text
+            name, address = name_address.split('\n')
         except ValueError:
             return
 
-        if status.upper() == 'PUBLISHED' or action.upper() != 'GET VERIFIED':
+        if (
+            status.upper() == 'PUBLISHED' or
+            action.upper() != 'VERIFY NOW'
+        ):
             return
 
-        element = row.find_element(By.CSS_SELECTOR, 'div.lm-listing-data.lm-pointer')
+        element = row.find_element(By.XPATH, 'td[5]/content/div/div')
         biz = self.biz_list.get_by_name(name)
 
         if not biz:
             return
-        elif action == 'Get verified' and not self.in_active_list(biz):
+        elif action == 'Verify now' and not self.in_active_list(biz):
             logger(instance=biz, data={'action': action, 'status': status})
             self.active_list.append(dict(
                 biz=biz,
@@ -475,20 +415,19 @@ class Uploader(BaseManager):
         return kwargs
 
     def delete_all(self, force=False, clean_listing=True):
-        self.driver.get('https://business.google.com/manage/?noredirect=1#/list')
-        self.gbm_cleanup()
-
-        rows = self.driver.find_elements_by_xpath('//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
+        self.driver.get('https://business.google.com/locations')
+        rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
             return
 
-        rows = rows[1:]
         selected = 0
 
         for row in rows:
+            text = [i.text for i in row.find_elements_by_xpath('td')]
             try:
-                index, name, address, phone_number, status, action = row.text.split('\n')
+                empty, index, name_address, status, action = text
+                name, address = name_address.split('\n')
             except ValueError:
                 continue
 
@@ -498,47 +437,20 @@ class Uploader(BaseManager):
                 if not biz or biz.date_success:
                     continue
 
-            try:
-                self.click_element(
-                    By.CSS_SELECTOR,
-                    'md-checkbox',
-                    source=row,
-                    max_retries=2
-                )
-                selected += 1
-            except TimeoutException:
-                self.click_element(
-                    By.XPATH,
-                    '//*[@id="verifyDialog"]/md-dialog-content/div[1]/div/md-icon',
-                    max_retries=2,
-                    raise_exception=False
-                )
-                self.click_element(
-                    By.XPATH,
-                    '//*[@id="bulkInsightsHighlight"]/div/div/div[2]/div[3]',
-                    max_retries=2,
-                    raise_exception=False
-                )
-                self.click_element(
-                    By.XPATH,
-                    '//*[@id="lm-list-view-promo-use-list-btn"]',
-                    max_retries=2,
-                    raise_exception=False
-                )
-                self.click_element(
-                    By.CSS_SELECTOR,
-                    'md-checkbox',
-                    source=row,
-                    max_retries=2
-                )
-                selected += 1
+            self.click_element(
+                By.XPATH,
+                'td[1]/content/div',
+                source=row,
+                max_retries=2
+            )
+            selected += 1
 
         if not selected:
             return
 
-        self.click_element(By.XPATH, '//*[@id="lm-title-bars-see-options-btn"]')
-        self.click_element(By.XPATH, '//*[@id="lm-title-bars-remove-btn"]', timeout=3)
-        self.click_element(By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
+        self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span/div')
+        self.click_element(By.XPATH, '//*[@id="js"]/div[9]/div/div/content[8]', timeout=3)
+        self.click_element(By.XPATH, '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]', timeout=5)
 
         time.sleep(5)
         if clean_listing:
@@ -578,7 +490,6 @@ class Uploader(BaseManager):
                     self.driver = webdriver.Chrome()
 
                 self.wait = WebDriverWait(self.driver, WAIT_TIME)
-                self.is_cleanup = False
                 self.driver.get('https://accounts.google.com/ServiceLogin')
 
                 try:
@@ -634,7 +545,7 @@ class Uploader(BaseManager):
                         if has_success:
                             break
                     except Exception as err:
-                        # import pdb; pdb.set_trace()
+                        import pdb; pdb.set_trace()
                         logger(instance=err, data=err)
                         print(traceback.format_exc())
                         self.delete_all()
