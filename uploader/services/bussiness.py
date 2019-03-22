@@ -3,6 +3,7 @@ import csv
 import os
 
 from config import BASE_DIR
+from exceptions import EmptyUpload
 from services.base import (
     BaseEntity, BaseEntityList, BaseService
 )
@@ -51,6 +52,9 @@ class BusinessList(BaseEntityList):
                     continue
                 writer.writerow(biz.get_csv_line(counter))
                 counter += 1
+
+            if counter == 1:
+                raise EmptyUpload
         return path
 
     def get_by_name(self, value):

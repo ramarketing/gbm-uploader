@@ -550,7 +550,12 @@ class Uploader(BaseManager):
                         else:
                             self.biz_list = self.service_biz.get_list(**kwargs)
 
-                    file = self.biz_list.create_csv()
+                    try:
+                        file = self.biz_list.create_csv()
+                    except EmptyUpload:
+                        self.biz_list.get_next_page()
+                        file = self.biz_list.create_csv()
+
                     logger(instance=self.biz_list, data={'file': file})
 
                     try:
