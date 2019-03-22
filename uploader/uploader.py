@@ -459,11 +459,16 @@ class Uploader(BaseManager):
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span'
         )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="js"]/div[9]/div/div/content[8]',
-            timeout=3
-        )
+        try:
+            self.click_element(
+                By.XPATH,
+                '//*[@id="js"]/div[9]/div/div/content[8]',
+                timeout=3
+            )
+        except TimeoutException:
+            logger(instance=self.biz_list, data="Unable to delete businesses.")
+            return
+
         self.click_element(
             By.XPATH,
             '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]',
