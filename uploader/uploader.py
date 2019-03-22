@@ -492,6 +492,7 @@ class Uploader(BaseManager):
 
         while credential_list.count:
             credential_page += 1
+            upload_errors = 0
 
             for credential in credential_list:
                 if any([credential.date_success, credential.date_fail]):
@@ -544,6 +545,11 @@ class Uploader(BaseManager):
                     return
 
                 for index in range(PER_CREDENTIAL):
+                    if upload_errors == 3:
+                        logger(instance=credental, data="Didn't upload anything 3 times.")
+                        credential.report_fail()
+                        break
+
                     if file_index > 0:
                         if self.biz_list:
                             self.biz_list.get_next_page()
@@ -566,6 +572,7 @@ class Uploader(BaseManager):
                         if has_success:
                             break
                     except EmptyUpload:
+                        upload_errors += 1
                         for biz in self.biz_list:
                             biz.report_fail()
                         continue
