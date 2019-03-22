@@ -9,6 +9,8 @@ load_dotenv(dotenv_path=os.path.join(BASE_DIR, '.env'))
 
 DEBUG = True if os.getenv('DEBUG', False) == 'True' else False
 
+PDB_DEBUG = True if os.getenv('PDB_DEBUG', False) == 'True' else False
+
 API_ROOT = os.getenv('API_ROOT')
 
 API_USERNAME = os.getenv('API_USERNAME')

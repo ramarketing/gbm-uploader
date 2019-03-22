@@ -15,7 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from exceptions import CredentialInvalid
 from services import BusinessService, CredentialService
-from config import BASE_DIR, DEBUG, PER_CREDENTIAL, WAIT_TIME
+from config import BASE_DIR, DEBUG, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
 from constants import TEXT_PHONE_VERIFICATION
 from logger import UploaderLogger
 
@@ -50,10 +50,8 @@ class BaseManager:
 
                 if retry > max_retries:
                     if raise_exception:
-                        '''
-                        if DEBUG:
+                        if PDB_DEBUG:
                             import pdb; pdb.set_trace()
-                        '''
                         raise TimeoutException
                     else:
                         return success
@@ -543,7 +541,8 @@ class Uploader(BaseManager):
                         if has_success:
                             break
                     except Exception as err:
-                        # import pdb; pdb.set_trace()
+                        if PDB_DEBUG:
+                            import pdb; pdb.set_trace()
                         logger(instance=err, data=err)
                         print(traceback.format_exc())
                         self.delete_all()
