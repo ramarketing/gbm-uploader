@@ -457,7 +457,7 @@ class Uploader(BaseManager):
 
         self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span/div'
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span'
         )
         self.click_element(
             By.XPATH,
@@ -549,8 +549,8 @@ class Uploader(BaseManager):
 
                 for index in range(PER_CREDENTIAL):
                     if upload_errors >= 3:
-                        logger(instance=credental, data="Didn't upload anything 3 times.")
                         credential.report_fail()
+                        logger(instance=credential, data="Didn't upload anything 3 times.")
                         break
 
                     if file_index > 0:
@@ -575,6 +575,7 @@ class Uploader(BaseManager):
                         if has_success:
                             break
                     except EmptyUpload:
+                        logger(instance=self.biz_list, data="No business show up on the screen.")
                         upload_errors += 1
                         for biz in self.biz_list:
                             biz.report_fail()
