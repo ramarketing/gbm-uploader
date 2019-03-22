@@ -545,7 +545,7 @@ class Uploader(BaseManager):
                     return
 
                 for index in range(PER_CREDENTIAL):
-                    if upload_errors == 3:
+                    if upload_errors >= 3:
                         logger(instance=credental, data="Didn't upload anything 3 times.")
                         credential.report_fail()
                         break
