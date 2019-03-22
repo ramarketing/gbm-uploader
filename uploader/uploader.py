@@ -258,6 +258,15 @@ class Uploader(BaseManager):
             raise_exception=False,
         )
 
+        time.sleep(5)
+        self.driver.refresh()
+        time.sleep(5)
+
+        body = self.driver.find_element(By.CSS_SELECTOR, 'body')
+        if "You haven't added any locations" in body.text:
+            raise CredentialInvalid
+
+
     def do_verification(self, credential):
         self.active_list = []
         rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
@@ -411,7 +420,7 @@ class Uploader(BaseManager):
         return kwargs
 
     def delete_all(self, force=False, clean_listing=True):
-        self.driver.get('https://business.google.com/locations')
+        # self.driver.get('https://business.google.com/locations')
         rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
@@ -487,6 +496,7 @@ class Uploader(BaseManager):
 
                 self.wait = WebDriverWait(self.driver, WAIT_TIME)
                 self.driver.get('https://accounts.google.com/ServiceLogin')
+                has_success = False
 
                 try:
                     self.do_login(credential)
@@ -508,7 +518,7 @@ class Uploader(BaseManager):
                         continue
                     else:
                         self.driver.get(
-                            'https://business.google.com/manage/?noredirect=1#/upload'
+                            'https://business.google.com/locations'
                         )
                         if not self.driver.current_url.startswith(
                             'https://business.google.com/'
@@ -540,6 +550,9 @@ class Uploader(BaseManager):
                         self.delete_all()
                         if has_success:
                             break
+                    except CredentialInvalid:
+                        has_success = False
+                        break
                     except Exception as err:
                         if PDB_DEBUG:
                             import pdb; pdb.set_trace()
@@ -549,7 +562,8 @@ class Uploader(BaseManager):
 
                     file_index += 1
 
-                credential.report_success()
+                if has_success:
+                    credential.report_success()
                 self.driver.quit()
 
             if credential_list.next:
