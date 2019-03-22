@@ -441,6 +441,9 @@ class Uploader(BaseManager):
                 if not biz or biz.date_success:
                     continue
 
+            if status.upper() == 'PUBLISHED':
+                continue
+
             self.click_element(
                 By.XPATH,
                 'td[1]/content/div',
