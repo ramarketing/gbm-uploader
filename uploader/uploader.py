@@ -579,7 +579,10 @@ class Uploader(BaseManager):
                         logger(instance=self.biz_list, data="No business show up on the screen.")
                         upload_errors += 1
                         for biz in self.biz_list:
-                            biz.report_fail()
+                            try:
+                                biz.report_fail()
+                            except Exception:
+                                continue
                         continue
 
                     file_index += 1
