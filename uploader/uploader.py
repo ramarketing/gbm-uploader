@@ -564,12 +564,6 @@ class Uploader(BaseManager):
                         for biz in self.biz_list:
                             biz.report_fail()
                         continue
-                    except Exception as err:
-                        if PDB_DEBUG:
-                            import pdb; pdb.set_trace()
-                        logger(instance=err, data=err)
-                        print(traceback.format_exc())
-                        self.delete_all()
 
                     file_index += 1
 
