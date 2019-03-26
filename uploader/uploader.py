@@ -40,6 +40,7 @@ class BaseManager:
             except ValueError:
                 timeout = 0
 
+            return_method = func.__name__.startswith('get_')
             raise_exception = kwargs.get('raise_exception', True)
 
             if timeout:
@@ -66,7 +67,7 @@ class BaseManager:
                                     'args': args,
                                     'retry': retry,
                                 })
-                                func(self, by, s, *args, **kwargs)
+                                response = func(self, by, s, *args, **kwargs)
                                 success = True
                                 break
                             except Exception as e:
@@ -80,14 +81,20 @@ class BaseManager:
                             'args': args,
                             'retry': retry,
                         })
-                        func(self, by, selector, *args, **kwargs)
-                        success=True
+                        response = func(self, by, selector, *args, **kwargs)
+                        success = True
                 except (TimeoutException, WebDriverException):
                     time.sleep(1)
 
-            return success
+            return response if return_method else success
 
         return wrapper
+
+    @perform_action
+    def get_text(self, by, selector, source=None, *args, **kwargs):
+        source = source or self.driver
+        element = source.find_element(by, selector)
+        return element.text
 
     @perform_action
     def fill_input(self, by, selector, content, source=None, *args, **kwargs):
@@ -232,6 +239,15 @@ class Uploader(BaseManager):
             max_retries=10,
             timeout=20
         )
+
+        response = self.get_text(
+            By.XPATH,
+            '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]'
+        )
+        msg, count = response.split('\n')
+        if msg == 'Errors' and int(count) == self.biz_list.count:
+            raise EmptyUpload
+
         self.click_element(
             By.XPATH,
             (
@@ -386,6 +402,11 @@ class Uploader(BaseManager):
     def clean_old(self):
         if hasattr(self, 'is_cleanup') and self.is_cleanup:
             return
+
+        success = self.click_element(By.XPATH, '//*[@id="dialogContent_8"]/div[3]/md-checkbox', raise_exception=False)
+        if success:
+            self.click_element(By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
+
         success = self.click_element(By.XPATH, '//*[@id="dialogContent_10"]/div[3]/md-checkbox', raise_exception=False)
         if success:
             self.click_element(By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
@@ -398,9 +419,11 @@ class Uploader(BaseManager):
         self.click_element(By.XPATH, '//*[@id="lm-list-view-promo-use-list-btn"]', raise_exception=False)
         self.click_element(By.XPATH, '//*[@id="lm-listings-switch-view-btn-1"]', raise_exception=False)
 
-        success = self.click_element(By.XPATH, '//*[@id="lm-listings-pager-menu-btn"]', raise_exception=False)
-        if success:
+        try:
+            self.click_element(By.XPATH, '//*[@id="lm-listings-pager-menu-btn"]', raise_exception=False)
             self.click_element(By.XPATH, '//*[@id="lm-listings-pager-menu-item-100"]')
+        except TimeoutException:
+            raise EmptyUpload
 
         self.is_cleanup = True
 
@@ -702,6 +725,14 @@ class Uploader(BaseManager):
                         self.delete_all()
                         if has_success:
                             break
+                    except EmptyUpload:
+                        for biz in self.biz_list:
+                            try:
+                                biz.report_fail()
+                            except Exception:
+                                continue
+                        self.biz_list = None
+                        has_success = False
                     except CredentialBypass:
                         logger(
                             instance=credential,
