@@ -251,7 +251,6 @@ class Uploader(BaseManager):
             By.XPATH,
             (
                 '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]'
             )
         )
 
