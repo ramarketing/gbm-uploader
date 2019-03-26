@@ -260,7 +260,7 @@ class Uploader(BaseManager):
             if msg == 'Errors' and int(count) == self.biz_list.count:
                 raise EmptyUpload
         except ValueError:
-            pass
+            logger(data="Invalid response %s" % response)
 
         self.click_element(
             By.XPATH,
