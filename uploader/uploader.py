@@ -186,7 +186,7 @@ class Uploader(BaseManager):
 
         self.click_element(
             By.XPATH,
-            '//*[@id="js"]/div[9]/div/div[2]/div[3]/div',
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
             max_retries=2,
             raise_exception=False
         )
