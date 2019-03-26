@@ -13,7 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from exceptions import CredentialInvalid, EmptyUpload
+from exceptions import CredentialBypass, CredentialInvalid, EmptyUpload
 from services import BusinessService, CredentialService
 from config import BASE_DIR, DEBUG, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
 from constants import TEXT_PHONE_VERIFICATION
@@ -218,7 +218,10 @@ class Uploader(BaseManager):
             )
             self.click_element(
                 By.XPATH,
-                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                (
+                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]'
+                ),
                 raise_exception=False
             )
             load_csv()
@@ -226,6 +229,7 @@ class Uploader(BaseManager):
         self.click_element(
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
+            max_retries=10,
             timeout=20
         )
         self.click_element(
@@ -255,15 +259,32 @@ class Uploader(BaseManager):
         )
 
         time.sleep(5)
-        self.driver.refresh()
-        time.sleep(5)
 
-        body = self.driver.find_element(By.CSS_SELECTOR, 'body')
-        if "You haven't added any locations" in body.text:
-            raise EmptyUpload
+    def do_verification(self):
+        url = 'https://business.google.com/manage/?noredirect=1#/list'
+        self.driver.get(url)
+        time.sleep(10)
+        if self.driver.current_url != url:
+            raise CredentialBypass
+        self.do_verification_old()
 
+    def do_verification_old(self):
+        self.active_list = []
+        self.clean_old()
+        rows = self.driver.find_elements_by_xpath('//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
 
-    def do_verification(self, credential):
+        if not rows:
+            return
+
+        selected = 0
+
+        for row in rows[1:]:
+            self.do_verification_old_row(row)
+
+        if len(self.active_list) == 0:
+            return
+
+    def do_verification_new(self):
         self.active_list = []
         rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
@@ -273,11 +294,12 @@ class Uploader(BaseManager):
         selected = 0
 
         for row in rows:
-            self.do_verification_row(row)
+            self.do_verification_new_row(row)
 
         if len(self.active_list) == 0:
             return
 
+    def post_do_verification(self, credential):
         tab_index = len(self.active_list)
 
         for item in self.active_list:
@@ -361,7 +383,56 @@ class Uploader(BaseManager):
 
         return has_success
 
-    def do_verification_row(self, row):
+    def clean_old(self):
+        if hasattr(self, 'is_cleanup') and self.is_cleanup:
+            return
+        success = self.click_element(By.XPATH, '//*[@id="dialogContent_10"]/div[3]/md-checkbox', raise_exception=False)
+        if success:
+            self.click_element(By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
+
+        success = self.click_element(By.XPATH, '//*[@id="bulkInsightsHighlight"]/div/div/div[1]/button', raise_exception=False)
+        if success:
+            self.click_element(By.XPATH, '//*[@id="localAnalyticsDialogForm"]/button')
+
+        self.click_element(By.XPATH, '//*[@id="lm-listings-switch-view-container"]/div[1]/div/div/div/div[1]/button', raise_exception=False)
+        self.click_element(By.XPATH, '//*[@id="lm-list-view-promo-use-list-btn"]', raise_exception=False)
+        self.click_element(By.XPATH, '//*[@id="lm-listings-switch-view-btn-1"]', raise_exception=False)
+
+        success = self.click_element(By.XPATH, '//*[@id="lm-listings-pager-menu-btn"]', raise_exception=False)
+        if success:
+            self.click_element(By.XPATH, '//*[@id="lm-listings-pager-menu-item-100"]')
+
+        self.is_cleanup = True
+
+    def do_verification_old_row(self, row):
+        try:
+            index, name, address, phone, status, action = row.text.split('\n')
+        except ValueError:
+            return
+
+        if (
+            status.upper() != 'NOT PUBLISHED' or
+            action.upper() != 'GET VERIFIED'
+        ):
+            return
+
+        element = row.find_element(By.XPATH, 'div[2]/div[4]/div[2]/div/div/div')
+        biz = self.biz_list.get_by_name(name)
+
+        if not biz:
+            return
+        elif not self.in_active_list(biz):
+            logger(instance=biz, data={'action': action, 'status': status})
+            self.active_list.append(dict(
+                biz=biz,
+                element=element,
+                row=row,
+            ))
+        else:
+            biz.report_fail()
+            logger(instance=biz, data='OUT')
+
+    def do_verification_new_row(self, row):
         text = [i.text for i in row.find_elements_by_xpath('td')]
 
         try:
@@ -418,8 +489,59 @@ class Uploader(BaseManager):
             kwargs['can_use'] = 1
         return kwargs
 
-    def delete_all(self, force=False, clean_listing=True):
-        # self.driver.get('https://business.google.com/locations')
+    def delete_all(self, **kwargs):
+        if self.driver.current_url == 'https://business.google.com/manage/?noredirect=1#/list':
+            return self.delete_all_old(**kwargs)
+        elif self.driver.current_url == 'https://business.google.com/locations':
+            return self.delete_all_new(**kwargs)
+        raise NotImplementedError('delete_all it not implemented for URL: %s' % self.driver.current_url)
+
+    def delete_all_old(self, force=False, clean_listing=True):
+        rows = self.driver.find_elements_by_xpath('//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
+
+        if not rows:
+            return
+
+        selected = 0
+        current_index = -2
+
+        for row in rows[1:]:
+            current_index += 1
+            try:
+                index, name, address, phone, status, action = row.text.split('\n')
+            except ValueError:
+                continue
+
+            if not force:
+                biz = self.biz_list.get_by_name(name)
+
+                if not biz or biz.date_success:
+                    continue
+
+            if status.upper() != 'NOT PUBLISHED':
+                continue
+
+            try:
+                self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row)
+            except TimeoutException:
+                if current_index == -1:
+                    target = self.driver.find_element(By.XPATH, '//*[@id="lm-filter-select-primary"]')
+                    ActionChains(self.driver).move_to_element(target).perform()
+                else:
+                    ActionChains(self.driver).move_to_element(rows[current_index]).perform()
+                self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row)
+            selected += 1
+
+        if not selected:
+            return
+
+        self.click_element(By.XPATH, '//*[@id="lm-title-bars-see-options-btn"]')
+        self.click_element(By.XPATH, '//*[@id="lm-title-bars-remove-btn"]', timeout=5)
+        self.click_element(By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
+        if clean_listing:
+            self.biz_list = None
+
+    def delete_all_new(self, force=False, clean_listing=True):
         rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
@@ -575,20 +697,19 @@ class Uploader(BaseManager):
 
                     try:
                         self.do_upload(file)
-                        has_success = self.do_verification(credential)
+                        self.do_verification()
+                        has_success = self.post_do_verification(credential)
                         self.driver.switch_to_window(self.driver.window_handles[0])
                         self.delete_all()
                         if has_success:
                             break
-                    except EmptyUpload:
-                        logger(instance=self.biz_list, data="No business show up on the screen.")
-                        upload_errors += 1
-                        for biz in self.biz_list:
-                            try:
-                                biz.report_fail()
-                            except Exception:
-                                continue
-                        continue
+                    except CredentialBypass:
+                        logger(
+                            instance=credential,
+                            data="Bypassing this credential."
+                        )
+                        has_success = False
+                        break
 
                     file_index += 1
 
@@ -596,7 +717,7 @@ class Uploader(BaseManager):
                     credential.report_success()
                 self.driver.quit()
 
-            if credential_list.next:
+            if credential_list.next and credential == credential_list[-1]:
                 credential_list.get_next_page()
             else:
                 logger(data="Process has finished successfully.")
