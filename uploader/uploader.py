@@ -254,9 +254,13 @@ class Uploader(BaseManager):
                 '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]'
             )
         )
-        msg, count = response.split('\n')
-        if msg == 'Errors' and int(count) == self.biz_list.count:
-            raise EmptyUpload
+
+        try:
+            msg, count = response.split('\n')
+            if msg == 'Errors' and int(count) == self.biz_list.count:
+                raise EmptyUpload
+        except ValueError:
+            pass
 
         self.click_element(
             By.XPATH,
