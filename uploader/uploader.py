@@ -259,7 +259,7 @@ class Uploader(BaseManager):
             msg, count = response.split('\n')
             if msg == 'Errors' and int(count) == self.biz_list.count:
                 raise EmptyUpload
-        except ValueError:
+        except (ValueError, UnicodeEncodeError):
             logger(data="Invalid response %s" % response)
 
         self.click_element(

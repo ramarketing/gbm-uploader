@@ -26,7 +26,10 @@ class UploaderLogger:
         self.append_to_file(line)
 
     def append_to_file(self, line):
-        with open(self.file, 'a') as file:
-            if DEBUG:
-                print(line)
-            file.write('\n' + line)
+        try:
+            with open(self.file, 'a') as file:
+                if DEBUG:
+                    print(line)
+                file.write('\n' + line)
+        except Exception:
+            pass
