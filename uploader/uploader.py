@@ -521,17 +521,14 @@ class Uploader(BaseManager):
             if status.upper() != 'NOT PUBLISHED':
                 continue
 
-            try:
-                self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row)
-            except TimeoutException:
-                if current_index == -1:
-                    target = self.driver.find_element(By.XPATH, '//*[@id="lm-filter-select-primary"]')
-                    ActionChains(self.driver).move_to_element(target).perform()
-                else:
-                    ActionChains(self.driver).move_to_element(rows[current_index]).perform()
-                success = self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row, raise_exception=False)
-                if not success:
-                    continue
+            if current_index == -1:
+                target = self.driver.find_element(By.XPATH, '//*[@id="lm-filter-select-primary"]')
+                ActionChains(self.driver).move_to_element(target).perform()
+            else:
+                ActionChains(self.driver).move_to_element(rows[current_index]).perform()
+            success = self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row, raise_exception=False)
+            if not success:
+                continue
             selected += 1
 
         if not selected:
