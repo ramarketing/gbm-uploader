@@ -529,8 +529,9 @@ class Uploader(BaseManager):
                     ActionChains(self.driver).move_to_element(target).perform()
                 else:
                     ActionChains(self.driver).move_to_element(rows[current_index]).perform()
-                self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row, raise_exception=False)
-                continue
+                success = self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row, raise_exception=False)
+                if not success:
+                    continue
             selected += 1
 
         if not selected:
