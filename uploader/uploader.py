@@ -184,6 +184,13 @@ class Uploader(BaseManager):
         except Exception:
             pass
 
+        self.click_element(
+            By.XPATH,
+            '//*[@id="js"]/div[9]/div/div[2]/div[3]/div',
+            max_retries=2,
+            raise_exception=False
+        )
+
         def load_csv():
             body = self.driver.find_element(By.CSS_SELECTOR, 'body')
             if "You haven't added any locations" not in body.text:
