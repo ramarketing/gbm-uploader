@@ -249,7 +249,10 @@ class Uploader(BaseManager):
 
         response = self.get_text(
             By.XPATH,
-            '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]'
+            (
+                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
+                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]'
+            )
         )
         msg, count = response.split('\n')
         if msg == 'Errors' and int(count) == self.biz_list.count:
@@ -264,22 +267,23 @@ class Uploader(BaseManager):
             ),
             timeout=5
         )
-        self.click_element(
+        success = self.click_element(
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div',
             timeout=20,
             raise_exception=False,
         )
-        self.click_element(
-            By.XPATH,
-            (
-                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]'
-            ),
-            timeout=5,
-            raise_exception=False,
-        )
+        if success:
+            self.click_element(
+                By.XPATH,
+                (
+                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
+                    '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]'
+                ),
+                timeout=5,
+            )
 
         time.sleep(5)
 
