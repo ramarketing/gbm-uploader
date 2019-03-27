@@ -1,5 +1,6 @@
 import os
 import platform
+from random import randint
 import time
 import traceback
 
@@ -133,21 +134,21 @@ class Uploader(BaseManager):
             By.NAME,
             'password',
             credential.password + Keys.RETURN,
-            timeout=3
+            timeout=randint(3,7)
         )
 
         success = self.click_element(
             By.XPATH,
             '//div[@data-challengetype="12"]',
             raise_exception=False,
-            timeout=3
+            timeout=randint(3,7)
         )
         if success:
             self.fill_input(
                 By.NAME,
                 'knowledgePreregisteredEmailResponse',
                 credential.recovery_email + Keys.RETURN,
-                timeout=3
+                timeout=randint(3,7)
             )
 
         phone = self.get_text(
