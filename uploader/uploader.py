@@ -307,7 +307,7 @@ class Uploader(BaseManager):
             ActionChains(self.driver) \
                 .move_to_element(element) \
                 .perform()
-            self.driver.execute_script('window.scrollBy(0, -100)')
+            self.driver.execute_script('window.scrollBy(0, -120)')
 
             if platform.system() == 'Darwin':
                 ActionChains(self.driver) \
@@ -402,7 +402,11 @@ class Uploader(BaseManager):
         if success:
             self.click_element(By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
 
-        success = self.click_element(By.XPATH, '//*[@id="dialogContent_10"]/div[3]/md-checkbox', raise_exception=False)
+        success = self.click_element(
+            By.XPATH,
+            '//*[@id="dialogContent_10"]/div[3]/md-checkbox',
+            raise_exception=False
+        )
         if success:
             self.click_element(By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
 
@@ -645,6 +649,7 @@ class Uploader(BaseManager):
                     continue
 
                 upload_errors = 0
+                self.is_cleanup = False
 
                 if platform.system() == 'Windows':
                     self.driver = webdriver.Chrome(
