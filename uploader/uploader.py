@@ -2,11 +2,10 @@ import os
 import platform
 from random import randint
 import time
-import traceback
 
 from selenium import webdriver
 from selenium.common.exceptions import (
-    ElementNotVisibleException, TimeoutException, WebDriverException
+    TimeoutException, WebDriverException
 )
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -16,9 +15,12 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from exceptions import CredentialBypass, CredentialInvalid, EmptyUpload
 from services import BusinessService, CredentialService
-from config import BASE_DIR, DEBUG, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
+from config import BASE_DIR, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
 from constants import TEXT_PHONE_VERIFICATION
 from logger import UploaderLogger
+
+if PDB_DEBUG:
+    import pdb
 
 
 logger = UploaderLogger()
@@ -53,7 +55,7 @@ class BaseManager:
                 if retry > max_retries:
                     if raise_exception:
                         if PDB_DEBUG:
-                            import pdb; pdb.set_trace()
+                            pdb.set_trace()
                         raise TimeoutException
                     else:
                         return success
@@ -71,7 +73,7 @@ class BaseManager:
                                 response = func(self, by, s, *args, **kwargs)
                                 success = True
                                 break
-                            except Exception as e:
+                            except Exception:
                                 pass
                         if not success:
                             raise TimeoutException
@@ -133,40 +135,28 @@ class Uploader(BaseManager):
         self.fill_input(
             By.NAME,
             'password',
-            credential.password + Keys.RETURN,
-            timeout=3
+            credential.password + Keys.RETURN
         )
 
-        try:
-            self.wait.until(
-                EC.url_contains('https://myaccount.google.com/')
-            )
-            return
-        except Exception:
-            pass
-
-        try:
-            self.click_element(
-                By.XPATH,
-                '//div[@data-challengetype="12"]'
-            )
+        success = self.click_element(
+            By.XPATH,
+            '//div[@data-challengetype="12"]',
+            raise_exception=False,
+            timeout=randint(3, 7)
+        )
+        if success:
             self.fill_input(
                 By.NAME,
                 'knowledgePreregisteredEmailResponse',
                 credential.recovery_email + Keys.RETURN,
-                timeout=5
+                timeout=randint(3, 7)
             )
-        except TimeoutException:
-            pass
 
-        try:
-            phone = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.ID, 'deviceAddress')
-                )
-            )
-        except Exception as e:
-            phone = None
+        phone = self.get_text(
+            By.ID,
+            'deviceAddress',
+            raise_exception=False
+        )
 
         if phone:
             raise CredentialInvalid("Requires cellphone.")
@@ -184,23 +174,36 @@ class Uploader(BaseManager):
         except Exception:
             pass
 
-        self.click_element(
+        success = self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]',
+            (
+                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]',
+                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div'
+            ),
             raise_exception=False
         )
+        if success:
+            self.click_element(
+                By.XPATH,
+                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                raise_exception=False,
+                timeout=5
+            )
 
         body = self.driver.find_element(By.CSS_SELECTOR, 'body')
         if "You haven't added any locations" not in body.text:
             self.driver.get(
-                'https://business.google.com/locations'
+                'https://business.google.com/manage/?noredirect=1#/list'
             )
             self.delete_all(force=True, clean_listing=False)
             self.driver.get(
                 'https://business.google.com/locations'
             )
 
-        self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div')
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div'
+        )
 
         self.click_element(
             By.XPATH,
@@ -284,8 +287,6 @@ class Uploader(BaseManager):
         if not rows:
             return
 
-        selected = 0
-
         for row in rows[1:]:
             self.do_verification_old_row(row)
 
@@ -298,8 +299,6 @@ class Uploader(BaseManager):
 
         if not rows:
             return
-
-        selected = 0
 
         for row in rows:
             self.do_verification_new_row(row)
@@ -670,12 +669,20 @@ class Uploader(BaseManager):
                 upload_errors = 0
                 self.is_cleanup = False
 
-                if platform.system() == 'Windows':
-                    self.driver = webdriver.Chrome(
-                        executable_path=os.path.join(BASE_DIR, 'chromedriver'),
-                    )
+                if randint(0, 1):
+                    if platform.system() == 'Windows':
+                        self.driver = webdriver.Firefox(
+                            executable_path=os.path.join(BASE_DIR, 'geckodriver')
+                        )
+                    else:
+                        self.driver = webdriver.Firefox()
                 else:
-                    self.driver = webdriver.Chrome()
+                    if platform.system() == 'Windows':
+                        self.driver = webdriver.Chrome(
+                            executable_path=os.path.join(BASE_DIR, 'chromedriver')
+                        )
+                    else:
+                        self.driver = webdriver.Chrome()
 
                 self.wait = WebDriverWait(self.driver, WAIT_TIME)
                 self.driver.get('https://accounts.google.com/ServiceLogin')
@@ -688,8 +695,8 @@ class Uploader(BaseManager):
                     credential.report_fail()
                     self.driver.quit()
                     continue
-                except Exception as e:
-                    text = self.driver.find_element_by_xpath('//body').text.strip()
+                except Exception:
+                    text = self.get_text('//body').strip()
 
                     if (
                         "t find your Google Account" in text or
