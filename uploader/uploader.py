@@ -302,6 +302,12 @@ class Uploader(BaseManager):
             item['tab_index'] = tab_index
             tab_index -= 1
             element = item['element']
+            before_count = len(self.driver.window_handles)
+
+            ActionChains(self.driver) \
+                .move_to_element(element) \
+                .perform()
+            self.driver.execute_script('window.scrollBy(0, -100)')
 
             if platform.system() == 'Darwin':
                 ActionChains(self.driver) \
@@ -315,6 +321,11 @@ class Uploader(BaseManager):
                     .click(element) \
                     .key_up(Keys.CONTROL) \
                     .perform()
+
+            after_count = len(self.driver.window_handles)
+
+            if before_count == after_count:
+                import pdb; pdb.set_trace()
 
         has_success = False
 
