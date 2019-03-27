@@ -135,38 +135,26 @@ class Uploader(BaseManager):
             credential.password + Keys.RETURN,
             timeout=3
         )
-        time.sleep(1)
 
-        try:
-            self.wait.until(
-                EC.url_contains('https://myaccount.google.com/')
-            )
-            return
-        except Exception:
-            pass
-
-        try:
-            self.click_element(
-                By.XPATH,
-                '//div[@data-challengetype="12"]'
-            )
+        success = self.click_element(
+            By.XPATH,
+            '//div[@data-challengetype="12"]',
+            raise_exception=False,
+            timeout=3
+        )
+        if success:
             self.fill_input(
                 By.NAME,
                 'knowledgePreregisteredEmailResponse',
                 credential.recovery_email + Keys.RETURN,
-                timeout=5
+                timeout=3
             )
-        except TimeoutException:
-            pass
 
-        try:
-            phone = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.ID, 'deviceAddress')
-                )
-            )
-        except Exception as e:
-            phone = None
+        phone = self.get_text(
+            By.ID,
+            'deviceAddress',
+            raise_exception=False
+        )
 
         if phone:
             raise CredentialInvalid("Requires cellphone.")
@@ -186,59 +174,37 @@ class Uploader(BaseManager):
 
         self.click_element(
             By.XPATH,
-            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-            max_retries=2,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]',
             raise_exception=False
         )
 
-        def load_csv():
-            body = self.driver.find_element(By.CSS_SELECTOR, 'body')
-            if "You haven't added any locations" not in body.text:
-                self.delete_all(force=True, clean_listing=False)
-                self.driver.get(
-                    'https://business.google.com/locations'
-                )
-
-            self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div')
-
-            self.click_element(
-                By.XPATH,
-                (
-                    '//*[@id="js"]/div[9]/div/div/content[2]/div[2]',
-                    '//*[@id="js"]/div[10]/div/div/content[2]/div[2]',
-                    '//*[@id="js"]/div[11]/div/div/content[2]/div[2]'
-                ),
-                timeout=3
+        body = self.driver.find_element(By.CSS_SELECTOR, 'body')
+        if "You haven't added any locations" not in body.text:
+            self.driver.get(
+                'https://business.google.com/locations'
             )
-            self.fill_input(
-                By.NAME,
-                'Filedata',
-                file,
-                timeout=5
+            self.delete_all(force=True, clean_listing=False)
+            self.driver.get(
+                'https://business.google.com/locations'
             )
 
-        try:
-            load_csv()
-        except TimeoutException:
-            self.click_element(
-                By.XPATH,
-                '//*[@id="js"]/div[9]/div/div[2]/div[3]/div',
-                raise_exception=False
-            )
-            self.click_element(
-                By.XPATH,
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div[2]/div[2]/div[1]',
-                raise_exception=False
-            )
-            self.click_element(
-                By.XPATH,
-                (
-                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]'
-                ),
-                raise_exception=False
-            )
-            load_csv()
+        self.click_element(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div')
+
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="js"]/div[9]/div/div/content[2]/div[2]',
+                '//*[@id="js"]/div[10]/div/div/content[2]/div[2]',
+                '//*[@id="js"]/div[11]/div/div/content[2]/div[2]'
+            ),
+            timeout=3
+        )
+        self.fill_input(
+            By.NAME,
+            'Filedata',
+            file,
+            timeout=5
+        )
 
         self.click_element(
             By.XPATH,
@@ -338,7 +304,11 @@ class Uploader(BaseManager):
             element = item['element']
 
             if platform.system() == 'Darwin':
-                ActionChains(self.driver).key_down(Keys.COMMAND).click(element).key_up(Keys.COMMAND).perform()
+                ActionChains(self.driver) \
+                    .key_down(Keys.COMMAND) \
+                    .click(element) \
+                    .key_up(Keys.COMMAND) \
+                    .perform()
             else:
                 ActionChains(self.driver) \
                     .key_down(Keys.CONTROL) \
