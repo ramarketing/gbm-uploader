@@ -325,7 +325,14 @@ class Uploader(BaseManager):
             after_count = len(self.driver.window_handles)
 
             if before_count == after_count:
-                import pdb; pdb.set_trace()
+                text = self.get_text(
+                    By.XPATH,
+                    '//*[@id="verifyDialog"]/md-dialog-content/div[1]',
+                    raise_exception=False
+                )
+                if text and 'Get verified to manage all of your locations' in text:
+                    self.delete_all()
+                    return False
 
         has_success = False
 
