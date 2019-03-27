@@ -134,28 +134,39 @@ class Uploader(BaseManager):
             By.NAME,
             'password',
             credential.password + Keys.RETURN,
-            timeout=randint(3,7)
+            timeout=3
         )
 
-        success = self.click_element(
-            By.XPATH,
-            '//div[@data-challengetype="12"]',
-            raise_exception=False,
-            timeout=randint(3,7)
-        )
-        if success:
+        try:
+            self.wait.until(
+                EC.url_contains('https://myaccount.google.com/')
+            )
+            return
+        except Exception:
+            pass
+
+        try:
+            self.click_element(
+                By.XPATH,
+                '//div[@data-challengetype="12"]'
+            )
             self.fill_input(
                 By.NAME,
                 'knowledgePreregisteredEmailResponse',
                 credential.recovery_email + Keys.RETURN,
-                timeout=randint(3,7)
+                timeout=5
             )
+        except TimeoutException:
+            pass
 
-        phone = self.get_text(
-            By.ID,
-            'deviceAddress',
-            raise_exception=False
-        )
+        try:
+            phone = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.ID, 'deviceAddress')
+                )
+            )
+        except Exception as e:
+            phone = None
 
         if phone:
             raise CredentialInvalid("Requires cellphone.")
