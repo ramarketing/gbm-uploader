@@ -106,10 +106,17 @@ class BaseManager:
         element.send_keys(content)
 
     @perform_action
-    def click_element(self, by, selector, source=None, *args, **kwargs):
+    def click_element(
+        self, by, selector, source=None, move=False, offset_y=0,
+        *args, **kwargs
+    ):
         source = source or self.driver
         element = source.find_element(by, selector)
-        ActionChains(self.driver).move_to_element(element).perform()
+
+        if any([move, offset_y]):
+            ActionChains(self.driver).move_to_element(element).perform()
+            self.driver.execute_script('window.scrollBy(0, -120)')
+
         disabled = element.get_attribute('aria-disabled')
         if disabled == 'true':
             time.sleep(5)
