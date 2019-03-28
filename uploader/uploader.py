@@ -530,9 +530,13 @@ class Uploader(BaseManager):
         return kwargs
 
     def delete_all(self, **kwargs):
-        if self.driver.current_url == 'https://business.google.com/manage/?noredirect=1#/list':
+        if self.driver.current_url.startswith(
+            'https://business.google.com/manage/?noredirect=1#/list'
+        ):
             return self.delete_all_old(**kwargs)
-        elif self.driver.current_url == 'https://business.google.com/locations':
+        elif self.driver.current_url.startswith(
+            'https://business.google.com/locations'
+        ):
             return self.delete_all_new(**kwargs)
         raise NotImplementedError('delete_all it not implemented for URL: %s' % self.driver.current_url)
 
