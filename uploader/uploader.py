@@ -562,7 +562,8 @@ class Uploader(BaseManager):
         elif self.driver.current_url.startswith(
             'https://business.google.com/locations'
         ):
-            return self.delete_all_new(**kwargs)
+            raise CredentialBypass
+            # return self.delete_all_new(**kwargs)
         raise NotImplementedError(
             'delete_all it not implemented for URL: %s' % self.driver.current_url)
 
