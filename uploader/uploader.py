@@ -109,6 +109,7 @@ class BaseManager:
     def click_element(self, by, selector, source=None, *args, **kwargs):
         source = source or self.driver
         element = source.find_element(by, selector)
+        ActionChains(self.driver).move_to_element(element).perform()
         disabled = element.get_attribute('aria-disabled')
         if disabled == 'true':
             time.sleep(5)
@@ -282,7 +283,8 @@ class Uploader(BaseManager):
     def do_verification_old(self):
         self.active_list = []
         self.clean_old()
-        rows = self.driver.find_elements_by_xpath('//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
+        rows = self.driver.find_elements_by_xpath(
+            '//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
 
         if not rows:
             return
@@ -295,7 +297,8 @@ class Uploader(BaseManager):
 
     def do_verification_new(self):
         self.active_list = []
-        rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
+        rows = self.driver.find_elements_by_xpath(
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
             return
@@ -366,7 +369,8 @@ class Uploader(BaseManager):
 
             if 'Is this your business' in title:
                 try:
-                    option = self.driver.find_elements(By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div[1]/div/content/label')
+                    option = self.driver.find_elements(
+                        By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div[1]/div/content/label')
                     option = option[-1].find_element(By.XPATH, 'div')
                     option.click()
                     self.click_element(
@@ -416,9 +420,11 @@ class Uploader(BaseManager):
         if hasattr(self, 'is_cleanup') and self.is_cleanup:
             return
 
-        success = self.click_element(By.XPATH, '//*[@id="dialogContent_8"]/div[3]/md-checkbox', raise_exception=False)
+        success = self.click_element(
+            By.XPATH, '//*[@id="dialogContent_8"]/div[3]/md-checkbox', raise_exception=False)
         if success:
-            self.click_element(By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
+            self.click_element(
+                By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
 
         success = self.click_element(
             By.XPATH,
@@ -426,19 +432,27 @@ class Uploader(BaseManager):
             raise_exception=False
         )
         if success:
-            self.click_element(By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
+            self.click_element(
+                By.XPATH, '/html/body/div[27]/md-dialog/md-dialog-actions/button')
 
-        success = self.click_element(By.XPATH, '//*[@id="bulkInsightsHighlight"]/div/div/div[1]/button', raise_exception=False)
+        success = self.click_element(
+            By.XPATH, '//*[@id="bulkInsightsHighlight"]/div/div/div[1]/button', raise_exception=False)
         if success:
-            self.click_element(By.XPATH, '//*[@id="localAnalyticsDialogForm"]/button')
+            self.click_element(
+                By.XPATH, '//*[@id="localAnalyticsDialogForm"]/button')
 
-        self.click_element(By.XPATH, '//*[@id="lm-listings-switch-view-container"]/div[1]/div/div/div/div[1]/button', raise_exception=False)
-        self.click_element(By.XPATH, '//*[@id="lm-list-view-promo-use-list-btn"]', raise_exception=False)
-        self.click_element(By.XPATH, '//*[@id="lm-listings-switch-view-btn-1"]', raise_exception=False)
+        self.click_element(
+            By.XPATH, '//*[@id="lm-listings-switch-view-container"]/div[1]/div/div/div/div[1]/button', raise_exception=False)
+        self.click_element(
+            By.XPATH, '//*[@id="lm-list-view-promo-use-list-btn"]', raise_exception=False)
+        self.click_element(
+            By.XPATH, '//*[@id="lm-listings-switch-view-btn-1"]', raise_exception=False)
 
         try:
-            self.click_element(By.XPATH, '//*[@id="lm-listings-pager-menu-btn"]', raise_exception=False)
-            self.click_element(By.XPATH, '//*[@id="lm-listings-pager-menu-item-100"]')
+            self.click_element(
+                By.XPATH, '//*[@id="lm-listings-pager-menu-btn"]', raise_exception=False)
+            self.click_element(
+                By.XPATH, '//*[@id="lm-listings-pager-menu-item-100"]')
         except TimeoutException:
             raise EmptyUpload
 
@@ -456,7 +470,8 @@ class Uploader(BaseManager):
         ):
             return
 
-        element = row.find_element(By.XPATH, 'div[2]/div[4]/div[2]/div/div/div')
+        element = row.find_element(
+            By.XPATH, 'div[2]/div[4]/div[2]/div/div/div')
         biz = self.biz_list.get_by_name(name)
 
         if not biz:
@@ -538,10 +553,12 @@ class Uploader(BaseManager):
             'https://business.google.com/locations'
         ):
             return self.delete_all_new(**kwargs)
-        raise NotImplementedError('delete_all it not implemented for URL: %s' % self.driver.current_url)
+        raise NotImplementedError(
+            'delete_all it not implemented for URL: %s' % self.driver.current_url)
 
     def delete_all_old(self, force=False, clean_listing=True):
-        rows = self.driver.find_elements_by_xpath('//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
+        rows = self.driver.find_elements_by_xpath(
+            '//*[@id="lm-listings-content-container"]/div[2]/div[1]/md-card-content[2]/div')
 
         if not rows:
             return
@@ -552,7 +569,8 @@ class Uploader(BaseManager):
         for row in rows[1:]:
             current_index += 1
             try:
-                index, name, address, phone, status, action = row.text.split('\n')
+                index, name, address, phone, status, action = row.text.split(
+                    '\n')
             except ValueError:
                 continue
 
@@ -566,11 +584,14 @@ class Uploader(BaseManager):
                 continue
 
             if current_index == -1:
-                target = self.driver.find_element(By.XPATH, '//*[@id="lm-filter-select-primary"]')
+                target = self.driver.find_element(
+                    By.XPATH, '//*[@id="lm-filter-select-primary"]')
                 ActionChains(self.driver).move_to_element(target).perform()
             else:
-                ActionChains(self.driver).move_to_element(rows[current_index]).perform()
-            success = self.click_element(By.XPATH, 'div[1]/md-checkbox', source=row, raise_exception=False)
+                ActionChains(self.driver).move_to_element(
+                    rows[current_index]).perform()
+            success = self.click_element(
+                By.XPATH, 'div[1]/md-checkbox', source=row, raise_exception=False)
             if not success:
                 continue
             selected += 1
@@ -578,14 +599,18 @@ class Uploader(BaseManager):
         if not selected:
             return
 
-        self.click_element(By.XPATH, '//*[@id="lm-title-bars-see-options-btn"]')
-        self.click_element(By.XPATH, '//*[@id="lm-title-bars-remove-btn"]', timeout=5)
-        self.click_element(By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
+        self.click_element(
+            By.XPATH, '//*[@id="lm-title-bars-see-options-btn"]')
+        self.click_element(
+            By.XPATH, '//*[@id="lm-title-bars-remove-btn"]', timeout=5)
+        self.click_element(
+            By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
         if clean_listing:
             self.biz_list = None
 
     def delete_all_new(self, force=False, clean_listing=True):
-        rows = self.driver.find_elements_by_xpath('//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
+        rows = self.driver.find_elements_by_xpath(
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
             return
@@ -698,7 +723,8 @@ class Uploader(BaseManager):
                         "t find your Google Account" in text or
                         "Account disabled" in text
                     ):
-                        logger(instance=credential, data="Account doesn't exists.")
+                        logger(instance=credential,
+                               data="Account doesn't exists.")
                         logger(instance=credential, data='Reported fail')
                         credential.report_fail()
                         continue
@@ -713,7 +739,8 @@ class Uploader(BaseManager):
                             self.driver.quit()
                             continue
 
-                self.biz_list = self.biz_list or self.service_biz.get_list(**kwargs)
+                self.biz_list = self.biz_list or self.service_biz.get_list(
+                    **kwargs)
 
                 if max_success and not self.can_continue(max_success, **kwargs):
                     logger(data="Completed.")
@@ -722,7 +749,8 @@ class Uploader(BaseManager):
                 for index in range(PER_CREDENTIAL):
                     if upload_errors >= 3:
                         credential.report_fail()
-                        logger(instance=credential, data="Didn't upload anything 3 times.")
+                        logger(instance=credential,
+                               data="Didn't upload anything 3 times.")
                         break
 
                     if file_index > 0:
@@ -743,7 +771,8 @@ class Uploader(BaseManager):
                         self.do_upload(file)
                         self.do_verification()
                         has_success = self.post_do_verification(credential)
-                        self.driver.switch_to_window(self.driver.window_handles[0])
+                        self.driver.switch_to_window(
+                            self.driver.window_handles[0])
                         self.delete_all()
                         if has_success:
                             break
