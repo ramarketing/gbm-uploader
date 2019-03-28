@@ -115,7 +115,9 @@ class BaseManager:
 
         if any([move, offset_y]):
             ActionChains(self.driver).move_to_element(element).perform()
-            self.driver.execute_script('window.scrollBy(0, -120)')
+            self.driver.execute_script(
+                'window.scrollBy(0, -{})'.format(offset_y)
+            )
 
         disabled = element.get_attribute('aria-disabled')
         if disabled == 'true':
@@ -655,7 +657,9 @@ class Uploader(BaseManager):
 
         self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span'
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span',
+            move=True,
+            offset_y=120
         )
         try:
             self.click_element(
