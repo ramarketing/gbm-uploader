@@ -117,7 +117,8 @@ class BaseManager:
 
         if move:
             self.driver.execute_script(
-                "return arguments[0].scrollIntoView(true);", element
+                "return arguments[0].scrollIntoView(true);",
+                source or element
             )
 
         disabled = element.get_attribute('aria-disabled')
@@ -304,16 +305,21 @@ class Uploader(BaseManager):
         if len(self.active_list) == 0:
             return
 
-    def do_verification_new(self):
+    def do_verification_new(self, special=False):
         self.active_list = []
         rows = self.driver.find_elements_by_xpath(
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
+            pdb.set_trace()
             return
 
         for row in rows:
-            self.do_verification_new_row(row)
+            try:
+                self.do_verification_new_row(row)
+            except Exception as err:
+                print(err)
+                pdb.set_trace()
 
         if len(self.active_list) == 0:
             return
@@ -541,7 +547,7 @@ class Uploader(BaseManager):
             except AssertionError:
                 biz = None
 
-        if biz.date_success:
+        if not biz or biz.date_success:
             return
 
         elif action == 'Verify now' and not self.in_active_list(biz):
@@ -623,7 +629,7 @@ class Uploader(BaseManager):
                     except AssertionError:
                         biz = None
 
-                if not biz or biz.date_success:
+                if biz and biz.date_success:
                     continue
 
             if status.upper() != 'NOT PUBLISHED':
@@ -652,8 +658,19 @@ class Uploader(BaseManager):
             self.biz_list = None
 
     def delete_all_new(self, force=False, clean_listing=True):
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
+            move=True
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
+        )
+
         rows = self.driver.find_elements_by_xpath(
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr'
+        )
 
         if not rows:
             return
@@ -677,7 +694,7 @@ class Uploader(BaseManager):
                     except AssertionError:
                         biz = None
 
-                if not biz or biz.date_success:
+                if biz and biz.date_success:
                     continue
 
             if status.upper() == 'PUBLISHED':
