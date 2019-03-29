@@ -307,6 +307,17 @@ class Uploader(BaseManager):
 
     def do_verification_new(self, special=False):
         self.active_list = []
+
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
+            move=True
+        )
+        self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
+        )
+        time.sleep(5)
         rows = self.driver.find_elements_by_xpath(
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
@@ -667,7 +678,7 @@ class Uploader(BaseManager):
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
         )
-
+        time.sleep(5)
         rows = self.driver.find_elements_by_xpath(
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr'
         )
