@@ -235,9 +235,10 @@ class Uploader(BaseManager):
             (
                 (
                     '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
-                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]'
+                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
                 ),
-            )
+            ),
+            raise_exception=False
         )
 
         try:
