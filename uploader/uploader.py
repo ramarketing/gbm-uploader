@@ -107,16 +107,14 @@ class BaseManager:
 
     @perform_action
     def click_element(
-        self, by, selector, source=None, move=False, offset_y=0,
-        *args, **kwargs
+        self, by, selector, source=None, move=False, *args, **kwargs
     ):
         source = source or self.driver
         element = source.find_element(by, selector)
 
-        if any([move, offset_y]):
-            ActionChains(self.driver).move_to_element(element).perform()
+        if move:
             self.driver.execute_script(
-                'window.scrollBy(0, -{})'.format(offset_y)
+                "return arguments[0].scrollIntoView(true);", element
             )
 
         disabled = element.get_attribute('aria-disabled')
@@ -177,12 +175,6 @@ class Uploader(BaseManager):
 
     def do_upload(self, file):
         self.driver.get('https://business.google.com/locations')
-
-        try:
-            alert = self.driver.switch_to_alert()
-            alert.accept()
-        except Exception:
-            pass
 
         success = self.click_element(
             By.XPATH,
@@ -286,9 +278,10 @@ class Uploader(BaseManager):
         url = 'https://business.google.com/manage/?noredirect=1#/list'
         self.driver.get(url)
         time.sleep(10)
-        if self.driver.current_url != url:
-            raise CredentialBypass
-        self.do_verification_old()
+        if self.driver.current_url.startswith(url):
+            return self.do_verification_new()
+        else:
+            return self.do_verification_old()
 
     def do_verification_old(self):
         self.active_list = []
@@ -501,7 +494,7 @@ class Uploader(BaseManager):
         text = [i.text for i in row.find_elements_by_xpath('td')]
 
         try:
-            empty, index, name_address, status, action = text
+            empty, id_, name_address, status, action = text
             name, address = name_address.split('\n')
         except ValueError:
             return
@@ -513,10 +506,14 @@ class Uploader(BaseManager):
             return
 
         element = row.find_element(By.XPATH, 'td[5]/content/div/div')
-        biz = self.biz_list.get_by_name(name)
+        biz = self.biz_list.get_by_pk(id_)
 
         if not biz:
-            return
+            try:
+                biz = self.service_biz.get_detail(id_)
+            except AssertionError:
+                return
+
         elif action == 'Verify now' and not self.in_active_list(biz):
             logger(instance=biz, data={'action': action, 'status': status})
             self.active_list.append(dict(
@@ -562,10 +559,12 @@ class Uploader(BaseManager):
         elif self.driver.current_url.startswith(
             'https://business.google.com/locations'
         ):
-            raise CredentialBypass
-            # return self.delete_all_new(**kwargs)
+            return self.delete_all_new(**kwargs)
         raise NotImplementedError(
-            'delete_all it not implemented for URL: %s' % self.driver.current_url)
+            'delete_all it not implemented for URL: %s' % (
+                self.driver.current_url
+            )
+        )
 
     def delete_all_old(self, force=False, clean_listing=True):
         rows = self.driver.find_elements_by_xpath(
@@ -660,7 +659,7 @@ class Uploader(BaseManager):
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span',
             move=True,
-            offset_y=120
+            offset_y=-120
         )
         try:
             self.click_element(
@@ -800,7 +799,10 @@ class Uploader(BaseManager):
                     except CredentialBypass:
                         logger(
                             instance=credential,
-                            data="Bypassing this credential."
+                            data={
+                                'message': "Bypassing this credential.",
+                                'url': self.driver.current_url,
+                            }
                         )
                         has_success = False
                         break
