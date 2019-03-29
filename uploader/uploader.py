@@ -13,7 +13,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from exceptions import CredentialBypass, CredentialInvalid, EmptyUpload
+from exceptions import (
+    CredentialBypass, CredentialInvalid, CredentialPendingVerification, EmptyUpload
+)
 from services import BusinessService, CredentialService
 from config import BASE_DIR, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
 from constants import TEXT_PHONE_VERIFICATION
@@ -195,13 +197,7 @@ class Uploader(BaseManager):
 
         body = self.driver.find_element(By.CSS_SELECTOR, 'body')
         if "You haven't added any locations" not in body.text:
-            self.driver.get(
-                'https://business.google.com/manage/?noredirect=1#/list'
-            )
-            self.delete_all(force=True, clean_listing=False)
-            self.driver.get(
-                'https://business.google.com/locations'
-            )
+            raise CredentialPendingVerification
 
         self.click_element(
             By.XPATH,
@@ -291,7 +287,6 @@ class Uploader(BaseManager):
 
         if not rows:
             return
-
         for row in rows[1:]:
             self.do_verification_old_row(row)
 
@@ -579,31 +574,29 @@ class Uploader(BaseManager):
         for row in rows[1:]:
             current_index += 1
             try:
-                index, name, address, phone, status, action = row.text.split(
+                id_, name, address, phone, status, action = row.text.split(
                     '\n')
             except ValueError:
                 continue
 
             if not force:
-                biz = self.biz_list.get_by_name(name)
+                biz = self.biz_list.get_by_pk(id_)
 
-                if not biz or biz.date_success:
+                if not biz:
+                    try:
+                        biz = self.service_biz.get_detail(id_)
+                    except AssertionError:
+                        continue
+
+                if biz.date_success:
                     continue
 
             if status.upper() != 'NOT PUBLISHED':
                 continue
 
-            if current_index == -1:
-                target = self.driver.find_element(
-                    By.XPATH, '//*[@id="lm-filter-select-primary"]')
-                ActionChains(self.driver).move_to_element(target).perform()
-            else:
-                ActionChains(self.driver).move_to_element(
-                    rows[current_index]).perform()
-            success = self.click_element(
-                By.XPATH, 'div[1]/md-checkbox', source=row, raise_exception=False)
-            if not success:
-                continue
+            self.click_element(
+                By.XPATH, 'div[1]/md-checkbox', source=row, move=True
+            )
             selected += 1
 
         if not selected:
@@ -612,9 +605,14 @@ class Uploader(BaseManager):
         self.click_element(
             By.XPATH, '//*[@id="lm-title-bars-see-options-btn"]')
         self.click_element(
-            By.XPATH, '//*[@id="lm-title-bars-remove-btn"]', timeout=5)
+            By.XPATH, '//*[@id="lm-title-bars-remove-btn"]',
+            timeout=5
+        )
         self.click_element(
-            By.XPATH, '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]', timeout=5)
+            By.XPATH,
+            '//*[@id="lm-confirm-dialog-list-selection-remove-selected-2-btn"]',
+            timeout=5
+        )
         if clean_listing:
             self.biz_list = None
 
@@ -630,15 +628,21 @@ class Uploader(BaseManager):
         for row in rows:
             text = [i.text for i in row.find_elements_by_xpath('td')]
             try:
-                empty, index, name_address, status, action = text
+                empty, id_, name_address, status, action = text
                 name, address = name_address.split('\n')
             except ValueError:
                 continue
 
             if not force:
-                biz = self.biz_list.get_by_name(name)
+                biz = self.biz_list.get_by_pk(id_)
 
-                if not biz or biz.date_success:
+                if not biz:
+                    try:
+                        self.service_biz.get_detail(id_)
+                    except AssertionError:
+                        continue
+
+                if biz.date_success:
                     continue
 
             if status.upper() == 'PUBLISHED':
@@ -648,7 +652,8 @@ class Uploader(BaseManager):
                 By.XPATH,
                 'td[1]/content/div',
                 source=row,
-                max_retries=2
+                max_retries=2,
+                move=True,
             )
             selected += 1
 
@@ -658,8 +663,7 @@ class Uploader(BaseManager):
         self.click_element(
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span',
-            move=True,
-            offset_y=-120
+            move=True
         )
         try:
             self.click_element(
@@ -784,8 +788,17 @@ class Uploader(BaseManager):
                         self.do_verification()
                         has_success = self.post_do_verification(credential)
                         self.driver.switch_to_window(
-                            self.driver.window_handles[0])
+                            self.driver.window_handles[0]
+                        )
                         self.delete_all()
+                        if has_success:
+                            break
+                    except CredentialPendingVerification:
+                        self.do_verification()
+                        has_success = self.post_do_verification(credential)
+                        self.driver.switch_to_window(
+                            self.driver.window_handles[0]
+                        )
                         if has_success:
                             break
                     except EmptyUpload:
@@ -809,6 +822,7 @@ class Uploader(BaseManager):
 
                     file_index += 1
 
+                self.delete_all()
                 if has_success:
                     credential.report_success()
                 self.driver.quit()
