@@ -712,19 +712,11 @@ class Uploader(BaseManager):
                 self.is_cleanup = False
 
                 if platform.system() == 'Windows':
-                    '''
                     self.driver = webdriver.Chrome(
                         executable_path=os.path.join(BASE_DIR, 'chromedriver')
                     )
-                    '''
-                    self.driver = webdriver.Firefox(
-                        executable_path=os.path.join(BASE_DIR, 'geckodriver')
-                    )
                 else:
-                    '''
                     self.driver = webdriver.Chrome()
-                    '''
-                    self.driver = webdriver.Firefox()
 
                 self.wait = WebDriverWait(self.driver, WAIT_TIME)
                 self.driver.get('https://accounts.google.com/ServiceLogin')
