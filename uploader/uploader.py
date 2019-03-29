@@ -710,7 +710,6 @@ class Uploader(BaseManager):
                 By.XPATH,
                 'td[1]/content/div',
                 source=row,
-                max_retries=2,
                 move=True,
             )
             selected += 1
