@@ -764,7 +764,7 @@ class Uploader(BaseManager):
             timeout=5
         )
 
-        time.sleep(15)
+        time.sleep(selected + 5)
         if clean_listing:
             self.biz_list = None
 
