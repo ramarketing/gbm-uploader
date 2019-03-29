@@ -322,15 +322,10 @@ class Uploader(BaseManager):
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
-            pdb.set_trace()
             return
 
         for row in rows:
-            try:
-                self.do_verification_new_row(row)
-            except Exception as err:
-                print(err)
-                pdb.set_trace()
+            self.do_verification_new_row(row)
 
         if len(self.active_list) == 0:
             return
