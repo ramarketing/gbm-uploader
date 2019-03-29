@@ -233,7 +233,10 @@ class Uploader(BaseManager):
         response = self.get_text(
             By.XPATH,
             (
-                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
+                (
+                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
+                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]'
+                ),
             )
         )
 
