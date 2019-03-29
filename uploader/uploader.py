@@ -112,8 +112,8 @@ class BaseManager:
     def click_element(
         self, by, selector, source=None, move=False, *args, **kwargs
     ):
-        source = source or self.driver
-        element = source.find_element(by, selector)
+        final_source = source or self.driver
+        element = final_source.find_element(by, selector)
 
         if move:
             self.driver.execute_script(
