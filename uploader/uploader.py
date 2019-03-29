@@ -235,7 +235,7 @@ class Uploader(BaseManager):
             (
                 (
                     '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
-                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
+                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]'
                 ),
             ),
             raise_exception=False
@@ -247,7 +247,7 @@ class Uploader(BaseManager):
                 raise EmptyUpload(
                     msg=traceback.format_exc()
                 )
-        except (ValueError, UnicodeEncodeError):
+        except (AttributeError, ValueError, UnicodeEncodeError):
             logger(data="Invalid response %s" % response)
 
         self.click_element(
