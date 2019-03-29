@@ -4,6 +4,10 @@ from urllib.parse import urlparse, parse_qs
 import requests
 
 from config import API_ROOT, API_USERNAME, API_PASSWORD
+from logger import UploaderLogger
+
+
+logging = UploaderLogger()
 
 
 class BaseEntity:
@@ -186,6 +190,14 @@ class BaseService:
         return self._request(method, endpoint, **kwargs)
 
     def _request(self, method, endpoint, **kwargs):
+        log_kwargs = kwargs.copy()
+        if 'header' in log_kwargs:
+            log_kwargs.pop('headers')
+        logging(instance=self.__class__, data={
+            'method': method,
+            'endpoint': endpoint,
+            'data': log_kwargs
+        })
         r = getattr(requests, method)(endpoint, **kwargs)
         assert r.status_code == requests.codes.ok, (
             "%s: Request error: %s" % (self.__class__.__name__, r.json())

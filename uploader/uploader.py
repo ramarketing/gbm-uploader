@@ -6,7 +6,7 @@ import traceback
 
 from selenium import webdriver
 from selenium.common.exceptions import (
-    TimeoutException, WebDriverException
+    JavascriptException, TimeoutException, WebDriverException
 )
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -116,10 +116,13 @@ class BaseManager:
         element = final_source.find_element(by, selector)
 
         if move:
-            self.driver.execute_script(
-                "return arguments[0].scrollIntoView(true);",
-                source or element
-            )
+            try:
+                self.driver.execute_script(
+                    "return arguments[0].scrollIntoView(true);", source or element)
+            except JavascriptException:
+                ActionChains(self.driver) \
+                    .move_to_element(source or element) \
+                    .perform()
 
         disabled = element.get_attribute('aria-disabled')
         if disabled == 'true':
@@ -308,15 +311,18 @@ class Uploader(BaseManager):
     def do_verification_new(self, special=False):
         self.active_list = []
 
-        self.click_element(
+        success = self.click_element(
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
-            move=True
+            move=True,
+            raise_exception=False
         )
-        self.click_element(
-            By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
-        )
+        if success:
+            self.click_element(
+                By.XPATH,
+                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
+            )
+
         time.sleep(5)
         rows = self.driver.find_elements_by_xpath(
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
@@ -725,7 +731,10 @@ class Uploader(BaseManager):
         try:
             self.click_element(
                 By.XPATH,
-                '//*[@id="js"]/div[9]/div/div/content[8]',
+                (
+                    '//*[@id="js"]/div[9]/div/div/content[8]',
+                    '//*[@id="js"]/div[10]/div/div/content[8]'
+                ),
                 timeout=3
             )
         except TimeoutException:
