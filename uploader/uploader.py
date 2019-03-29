@@ -344,10 +344,19 @@ class Uploader(BaseManager):
             element = item['element']
             before_count = len(self.driver.window_handles)
 
+            # Trick
+            special_element = self.driver.find_element(
+                By.XPATH,
+                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[2]'
+            )
+            ActionChains(self.driver) \
+                .move_to_element(special_element) \
+                .perform()
+            # End of trick
+
             ActionChains(self.driver) \
                 .move_to_element(element) \
                 .perform()
-            self.driver.execute_script('window.scrollBy(0, -120)')
 
             if platform.system() == 'Darwin':
                 ActionChains(self.driver) \
