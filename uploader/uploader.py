@@ -2,6 +2,7 @@ import os
 import platform
 from random import randint
 import time
+import traceback
 
 from selenium import webdriver
 from selenium.common.exceptions import (
@@ -169,7 +170,7 @@ class Uploader(BaseManager):
         )
 
         if phone:
-            raise CredentialInvalid("Requires cellphone.")
+            raise CredentialInvalid(msg="Phone number is required")
 
         self.wait.until(
             EC.url_contains('https://myaccount.google.com/')
@@ -197,7 +198,9 @@ class Uploader(BaseManager):
 
         body = self.driver.find_element(By.CSS_SELECTOR, 'body')
         if "You haven't added any locations" not in body.text:
-            raise CredentialPendingVerification
+            raise CredentialPendingVerification(
+                msg="Credential has business to be verified."
+            )
 
         self.click_element(
             By.XPATH,
@@ -237,7 +240,9 @@ class Uploader(BaseManager):
         try:
             msg, count = response.split('\n')
             if msg == 'Errors' and int(count) == self.biz_list.count:
-                raise EmptyUpload
+                raise EmptyUpload(
+                    msg=traceback.format_exc()
+                )
         except (ValueError, UnicodeEncodeError):
             logger(data="Invalid response %s" % response)
 
@@ -272,12 +277,18 @@ class Uploader(BaseManager):
 
     def do_verification(self):
         url = 'https://business.google.com/manage/?noredirect=1#/list'
+        url_old = 'https://business.google.com/manage'
+        url_new = 'https://business.google.com/locations'
         self.driver.get(url)
-        time.sleep(10)
-        if self.driver.current_url.startswith(url):
-            return self.do_verification_new()
-        else:
+        time.sleep(5)
+        print('\n\n\nStarting verification\n\n\n')
+        if self.driver.current_url.startswith(url_old):
             return self.do_verification_old()
+        elif self.driver.current_url.startswith(url_new):
+            return self.do_verification_new()
+        raise NotImplementedError(
+            "do_verification not implemented for url" % self.driver.current_url
+        )
 
     def do_verification_old(self):
         self.active_list = []
@@ -342,8 +353,9 @@ class Uploader(BaseManager):
                     '//*[@id="verifyDialog"]/md-dialog-content/div[1]',
                     raise_exception=False
                 )
+                pdb.set_trace()
                 if text and 'Get verified to manage all of your locations' in text:
-                    self.delete_all()
+                    self.delete_all(force=True, clean_listing=True)
                     return False
 
         has_success = False
@@ -440,19 +452,32 @@ class Uploader(BaseManager):
                 By.XPATH, '//*[@id="localAnalyticsDialogForm"]/button')
 
         self.click_element(
-            By.XPATH, '//*[@id="lm-listings-switch-view-container"]/div[1]/div/div/div/div[1]/button', raise_exception=False)
+            By.XPATH,
+            '//*[@id="lm-listings-switch-view-container"]/div[1]/div/div/div/div[1]/button',
+            raise_exception=False
+        )
         self.click_element(
-            By.XPATH, '//*[@id="lm-list-view-promo-use-list-btn"]', raise_exception=False)
+            By.XPATH,
+            '//*[@id="lm-list-view-promo-use-list-btn"]',
+            raise_exception=False
+        )
         self.click_element(
-            By.XPATH, '//*[@id="lm-listings-switch-view-btn-1"]', raise_exception=False)
+            By.XPATH,
+            '//*[@id="lm-listings-switch-view-btn-1"]',
+            raise_exception=False
+        )
 
         try:
             self.click_element(
-                By.XPATH, '//*[@id="lm-listings-pager-menu-btn"]', raise_exception=False)
+                By.XPATH, '//*[@id="lm-listings-pager-menu-btn"]',
+                raise_exception=False
+            )
             self.click_element(
                 By.XPATH, '//*[@id="lm-listings-pager-menu-item-100"]')
         except TimeoutException:
-            raise EmptyUpload
+            raise EmptyUpload(
+                msg=traceback.format_exc()
+            )
 
         self.is_cleanup = True
 
@@ -586,9 +611,9 @@ class Uploader(BaseManager):
                     try:
                         biz = self.service_biz.get_detail(id_)
                     except AssertionError:
-                        continue
+                        biz = None
 
-                if biz.date_success:
+                if not biz or biz.date_success:
                     continue
 
             if status.upper() != 'NOT PUBLISHED':
@@ -638,11 +663,11 @@ class Uploader(BaseManager):
 
                 if not biz:
                     try:
-                        self.service_biz.get_detail(id_)
+                        biz = self.service_biz.get_detail(id_)
                     except AssertionError:
-                        continue
+                        biz = None
 
-                if biz.date_success:
+                if not biz or biz.date_success:
                     continue
 
             if status.upper() == 'PUBLISHED':
@@ -799,6 +824,7 @@ class Uploader(BaseManager):
                         self.driver.switch_to_window(
                             self.driver.window_handles[0]
                         )
+                        self.delete_all()
                         if has_success:
                             break
                     except EmptyUpload:
@@ -822,7 +848,6 @@ class Uploader(BaseManager):
 
                     file_index += 1
 
-                self.delete_all()
                 if has_success:
                     credential.report_success()
                 self.driver.quit()
