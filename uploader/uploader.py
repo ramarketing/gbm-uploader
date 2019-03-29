@@ -116,13 +116,9 @@ class BaseManager:
         element = final_source.find_element(by, selector)
 
         if move:
-            try:
-                self.driver.execute_script(
-                    "return arguments[0].scrollIntoView(true);", source or element)
-            except JavascriptException:
-                ActionChains(self.driver) \
-                    .move_to_element(source or element) \
-                    .perform()
+            ActionChains(self.driver) \
+                .move_to_element(source or element) \
+                .perform()
 
         disabled = element.get_attribute('aria-disabled')
         if disabled == 'true':
@@ -688,6 +684,14 @@ class Uploader(BaseManager):
             return
 
         selected = 0
+
+        # Trick
+        element = self.driver.find_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[2]'
+        )
+        ActionChains(self.driver).move_to_element(element).perform()
+        # End of trick
 
         for row in rows:
             text = [i.text for i in row.find_elements_by_xpath('td')]

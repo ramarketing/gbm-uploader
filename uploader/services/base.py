@@ -191,7 +191,7 @@ class BaseService:
 
     def _request(self, method, endpoint, **kwargs):
         log_kwargs = kwargs.copy()
-        if 'header' in log_kwargs:
+        if 'headers' in log_kwargs:
             log_kwargs.pop('headers')
         logging(instance=self.__class__, data={
             'method': method,
