@@ -483,7 +483,7 @@ class Uploader(BaseManager):
 
     def do_verification_old_row(self, row):
         try:
-            index, name, address, phone, status, action = row.text.split('\n')
+            id_, name, address, phone, status, action = row.text.split('\n')
         except ValueError:
             return
 
@@ -495,11 +495,18 @@ class Uploader(BaseManager):
 
         element = row.find_element(
             By.XPATH, 'div[2]/div[4]/div[2]/div/div/div')
-        biz = self.biz_list.get_by_name(name)
+        biz = self.biz_list.get_by_id(id_)
 
         if not biz:
+            try:
+                biz = self.service_biz.get_detail(id_)
+            except AssertionError:
+                biz = None
+
+        if biz.date_success:
             return
-        elif not self.in_active_list(biz):
+
+        if not self.in_active_list(biz):
             logger(instance=biz, data={'action': action, 'status': status})
             self.active_list.append(dict(
                 biz=biz,
@@ -532,7 +539,10 @@ class Uploader(BaseManager):
             try:
                 biz = self.service_biz.get_detail(id_)
             except AssertionError:
-                return
+                biz = None
+
+        if biz.date_success:
+            return
 
         elif action == 'Verify now' and not self.in_active_list(biz):
             logger(instance=biz, data={'action': action, 'status': status})
