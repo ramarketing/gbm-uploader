@@ -763,7 +763,7 @@ class Uploader(BaseManager):
             timeout=5
         )
 
-        time.sleep(5)
+        time.sleep(15)
         if clean_listing:
             self.biz_list = None
 
