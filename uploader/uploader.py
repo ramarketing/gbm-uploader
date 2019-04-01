@@ -745,6 +745,12 @@ class Uploader(BaseManager):
         if not selected:
             return
 
+        # Trick
+        element = self.driver.find_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[2]'
+        )
+        ActionChains(self.driver).move_to_element(element).perform()
         self.click_element(
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span',
