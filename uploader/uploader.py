@@ -682,7 +682,8 @@ class Uploader(BaseManager):
         success = self.click_element(
             By.XPATH,
             '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
-            move=True
+            move=True,
+            raise_exception=False
         )
         if success:
             self.click_element(
