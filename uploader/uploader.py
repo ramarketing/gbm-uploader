@@ -816,7 +816,7 @@ class Uploader(BaseManager):
                     self.driver.quit()
                     continue
                 except Exception:
-                    text = self.get_text('//body').strip()
+                    text = self.get_text(By.XPATH, '//body').strip()
 
                     if (
                         "t find your Google Account" in text or
