@@ -679,17 +679,17 @@ class Uploader(BaseManager):
             self.biz_list = None
 
     def delete_all_new(self, force=False, clean_listing=True):
-        try:
-            self.click_element(
-                By.XPATH,
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
-                move=True
-            )
+        success = self.click_element(
+            By.XPATH,
+            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
+            move=True
+        )
+        if success:
             self.click_element(
                 By.XPATH,
                 '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
             )
-        except TimeoutException:
+        else:
             return
 
         time.sleep(5)
