@@ -191,7 +191,11 @@ class Uploader(BaseManager):
         if success:
             self.click_element(
                 By.XPATH,
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                (
+                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                    '//*[@id="js"]/div[11]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                ),
                 raise_exception=False,
                 timeout=5
             )
@@ -212,7 +216,7 @@ class Uploader(BaseManager):
             (
                 '//*[@id="js"]/div[9]/div/div/content[2]/div[2]',
                 '//*[@id="js"]/div[10]/div/div/content[2]/div[2]',
-                '//*[@id="js"]/div[11]/div/div/content[2]/div[2]'
+                '//*[@id="js"]/div[11]/div/div/content[2]/div[2]',
             ),
             timeout=3
         )
@@ -337,11 +341,11 @@ class Uploader(BaseManager):
             return
 
     def post_do_verification(self, credential):
-        tab_index = len(self.active_list)
+        tab_index = 1
 
         for item in self.active_list:
             item['tab_index'] = tab_index
-            tab_index -= 1
+            tab_index += 1
             element = item['element']
             before_count = len(self.driver.window_handles)
 
@@ -380,20 +384,20 @@ class Uploader(BaseManager):
                     '//*[@id="verifyDialog"]/md-dialog-content/div[1]',
                     raise_exception=False
                 )
-                pdb.set_trace()
                 if text and 'Get verified to manage all of your locations' in text:
                     self.delete_all(force=True, clean_listing=True)
                     return False
 
         has_success = False
+        tab_array = list(range(1, len(self.driver.window_handles)))
 
-        for i in range(1, len(self.driver.window_handles)):
+        for i in tab_array:
             self.driver.switch_to_window(self.driver.window_handles[i])
 
             item = self.get_item_by_tab_index(i)
             biz = item['biz']
             title = self.driver.title
-
+            pdb.set_trace()
             logger(instance=biz, data='Title: "{}"'.format(title))
 
             if (
@@ -403,12 +407,11 @@ class Uploader(BaseManager):
             ):
                 biz.report_fail()
                 continue
-
             if 'Is this your business' in title:
                 try:
-                    option = self.driver.find_elements(
+                    options = self.driver.find_elements(
                         By.XPATH, '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div[1]/div/content/label')
-                    option = option[-1].find_element(By.XPATH, 'div')
+                    option = options[-1].find_element(By.XPATH, 'div')
                     option.click()
                     self.click_element(
                         By.XPATH,
@@ -522,7 +525,7 @@ class Uploader(BaseManager):
 
         element = row.find_element(
             By.XPATH, 'div[2]/div[4]/div[2]/div/div/div')
-        biz = self.biz_list.get_by_id(id_)
+        biz = self.biz_list.get_by_id(int(id_))
 
         if not biz:
             try:
@@ -560,7 +563,7 @@ class Uploader(BaseManager):
             return
 
         element = row.find_element(By.XPATH, 'td[5]/content/div/div')
-        biz = self.biz_list.get_by_pk(id_)
+        biz = self.biz_list.get_by_pk(int(id_))
 
         if not biz:
             try:
