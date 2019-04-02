@@ -397,7 +397,6 @@ class Uploader(BaseManager):
             item = self.get_item_by_tab_index(i)
             biz = item['biz']
             title = self.driver.title
-            pdb.set_trace()
             logger(instance=biz, data='Title: "{}"'.format(title))
 
             if (
