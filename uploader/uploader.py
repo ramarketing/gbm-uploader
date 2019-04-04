@@ -6,7 +6,7 @@ import traceback
 
 from selenium import webdriver
 from selenium.common.exceptions import (
-    JavascriptException, TimeoutException, WebDriverException
+    TimeoutException, WebDriverException
 )
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -15,7 +15,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from exceptions import (
-    CredentialBypass, CredentialInvalid, CredentialPendingVerification, EmptyUpload
+    CredentialBypass, CredentialInvalid, CredentialPendingVerification,
+    EmptyUpload, UploadTimeout
 )
 from services import BusinessService, CredentialService
 from config import BASE_DIR, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
@@ -227,12 +228,15 @@ class Uploader(BaseManager):
             timeout=5
         )
 
-        self.click_element(
-            By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
-            max_retries=10,
-            timeout=20
-        )
+        try:
+            self.click_element(
+                By.XPATH,
+                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
+                max_retries=10,
+                timeout=20
+            )
+        except TimeoutException:
+            raise UploadTimeout
 
         response = self.get_text(
             By.XPATH,
@@ -904,6 +908,9 @@ class Uploader(BaseManager):
                                 biz.report_fail()
                             except Exception:
                                 continue
+                        self.biz_list = None
+                        has_success = False
+                    except UploadTimeout:
                         self.biz_list = None
                         has_success = False
                     except CredentialBypass:
