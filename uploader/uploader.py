@@ -221,14 +221,14 @@ class Uploader(BaseManager):
             ),
             timeout=3
         )
-        self.fill_input(
-            By.NAME,
-            'Filedata',
-            file,
-            timeout=5
-        )
-
         try:
+            self.fill_input(
+                By.NAME,
+                'Filedata',
+                file,
+                timeout=5
+            )
+
             self.click_element(
                 By.XPATH,
                 '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
@@ -913,6 +913,7 @@ class Uploader(BaseManager):
                     except UploadTimeout:
                         self.biz_list = None
                         has_success = False
+                        break
                     except CredentialBypass:
                         logger(
                             instance=credential,
