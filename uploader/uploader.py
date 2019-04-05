@@ -180,27 +180,6 @@ class Uploader(BaseManager):
     def do_upload(self, file):
         self.driver.get('https://business.google.com/locations')
 
-        success = self.click_element(
-            By.XPATH,
-            (
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[1]',
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]',
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div'
-            ),
-            raise_exception=False
-        )
-        if success:
-            self.click_element(
-                By.XPATH,
-                (
-                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                    '//*[@id="js"]/div[11]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                ),
-                raise_exception=False,
-                timeout=5
-            )
-
         body = self.driver.find_element(By.CSS_SELECTOR, 'body')
         if "You haven't added any locations" not in body.text:
             raise CredentialPendingVerification(
@@ -209,15 +188,15 @@ class Uploader(BaseManager):
 
         self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div'
+            (
+                '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div',
+            )
         )
 
         self.click_element(
             By.XPATH,
             (
-                '//*[@id="js"]/div[9]/div/div/content[2]/div[2]',
-                '//*[@id="js"]/div[10]/div/div/content[2]/div[2]',
-                '//*[@id="js"]/div[11]/div/div/content[2]/div[2]',
+                '/html/body/div[5]/div/div/content[2]',
             ),
             timeout=3
         )
@@ -231,7 +210,9 @@ class Uploader(BaseManager):
 
             self.click_element(
                 By.XPATH,
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
+                (
+                    '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
+                ),
                 max_retries=10,
                 timeout=20
             )
@@ -241,10 +222,7 @@ class Uploader(BaseManager):
         response = self.get_text(
             By.XPATH,
             (
-                (
-                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
-                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]'
-                ),
+                '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
             ),
             raise_exception=False
         )
@@ -256,31 +234,32 @@ class Uploader(BaseManager):
                     msg=traceback.format_exc()
                 )
         except (AttributeError, ValueError, UnicodeEncodeError):
+            if PDB_DEBUG:
+                pdb.set_trace()
             logger(data="Invalid response %s" % response)
 
+        # Apply
         self.click_element(
             By.XPATH,
             (
-                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
-                '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
             ),
             timeout=5
         )
+
+        # Review changes
         success = self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div',
+            '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div',
             timeout=20,
             raise_exception=False,
         )
         if success:
+            # Apply
             self.click_element(
                 By.XPATH,
                 (
-                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                    '//*[@id="js"]/div[10]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
-                    '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
-                    '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/div[1]'
+                    '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[3]/div[2]/div'
                 ),
                 timeout=5,
             )
@@ -288,12 +267,11 @@ class Uploader(BaseManager):
         time.sleep(5)
 
     def do_verification(self):
-        url = 'https://business.google.com/manage/?noredirect=1#/list'
         url_old = 'https://business.google.com/manage'
         url_new = 'https://business.google.com/locations'
-        self.driver.get(url)
-        time.sleep(5)
+
         print('\n\n\nStarting verification\n\n\n')
+
         if self.driver.current_url.startswith(url_old):
             return self.do_verification_old()
         elif self.driver.current_url.startswith(url_new):
@@ -319,21 +297,24 @@ class Uploader(BaseManager):
     def do_verification_new(self, special=False):
         self.active_list = []
 
+        # Page size
         success = self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
+            '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
             move=True,
             raise_exception=False
         )
         if success:
+            # 100
             self.click_element(
                 By.XPATH,
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
+                '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
             )
 
         time.sleep(5)
+
         rows = self.driver.find_elements_by_xpath(
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
+            '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr')
 
         if not rows:
             return
@@ -356,7 +337,7 @@ class Uploader(BaseManager):
             # Trick
             special_element = self.driver.find_element(
                 By.XPATH,
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[2]'
+                '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/div[2]'
             )
             ActionChains(self.driver) \
                 .move_to_element(special_element) \
@@ -615,13 +596,16 @@ class Uploader(BaseManager):
         return kwargs
 
     def delete_all(self, **kwargs):
-        if self.driver.current_url.startswith(
-            'https://business.google.com/manage/?noredirect=1#/list'
-        ):
+        url_old = 'https://business.google.com/manage/'
+        url_new = 'https://business.google.com/locations'
+
+        self.driver.get(self.driver.current_url)
+        time.sleep(3)
+        self.driver.refresh()
+
+        if self.driver.current_url.startswith(url_old):
             return self.delete_all_old(**kwargs)
-        elif self.driver.current_url.startswith(
-            'https://business.google.com/locations'
-        ):
+        elif self.driver.current_url.startswith(url_new):
             return self.delete_all_new(**kwargs)
         raise NotImplementedError(
             'delete_all it not implemented for URL: %s' % (
@@ -685,26 +669,33 @@ class Uploader(BaseManager):
             self.biz_list = None
 
     def delete_all_new(self, force=False, clean_listing=True):
+        # Page size
         success = self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
+            (
+                '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
+                '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[1]/div[1]/div[4]'
+            ),
             move=True,
             raise_exception=False
         )
         if success:
+            # 100
             self.click_element(
                 By.XPATH,
-                '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
+                '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
             )
         else:
+            logger(instance=self.biz_list, data="Unable to delete businesses.")
             return
 
         time.sleep(5)
         rows = self.driver.find_elements_by_xpath(
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr'
+            '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[2]/table/tbody/tr'
         )
 
         if not rows:
+            logger(instance=self.biz_list, data="Unable to delete businesses.")
             return
 
         selected = 0
@@ -712,7 +703,7 @@ class Uploader(BaseManager):
         # Trick
         element = self.driver.find_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[2]'
+            '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div'
         )
         ActionChains(self.driver).move_to_element(element).perform()
         # End of trick
@@ -726,7 +717,7 @@ class Uploader(BaseManager):
                 continue
 
             if not force:
-                biz = self.biz_list.get_by_pk(id_)
+                biz = self.biz_list.get_by_pk(int(id_))
 
                 if not biz:
                     try:
@@ -749,35 +740,39 @@ class Uploader(BaseManager):
             selected += 1
 
         if not selected:
+            logger(instance=self.biz_list, data="Unable to delete businesses.")
             return
 
         # Trick
         element = self.driver.find_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/div[2]'
+            '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div'
         )
         ActionChains(self.driver).move_to_element(element).perform()
+
+        # Actions
         self.click_element(
             By.XPATH,
-            '//*[@id="main_viewpane"]/c-wiz[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span',
+            '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div[2]/div[2]/span/div',
             move=True
         )
-        try:
-            self.click_element(
-                By.XPATH,
-                (
-                    '//*[@id="js"]/div[9]/div/div/content[8]',
-                    '//*[@id="js"]/div[10]/div/div/content[8]'
-                ),
-                timeout=3
-            )
-        except TimeoutException:
+        success = self.click_element(
+            By.XPATH,
+            (
+                '/html/body/div[8]/div/div/content[8]',
+            ),
+            timeout=3
+        )
+
+        if not success:
             logger(instance=self.biz_list, data="Unable to delete businesses.")
             return
 
         self.click_element(
             By.XPATH,
-            '//*[@id="js"]/div[9]/div/div[2]/content/div/div[2]/div[3]/div[2]',
+            (
+                '/html/body/div[7]/div[4]/div/div[2]/content/div/div[2]/div[3]/div[2]'
+            ),
             timeout=5
         )
 
