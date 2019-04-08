@@ -190,6 +190,7 @@ class Uploader(BaseManager):
             By.XPATH,
             (
                 '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div',
+                '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div'
             )
         )
 
@@ -197,6 +198,7 @@ class Uploader(BaseManager):
             By.XPATH,
             (
                 '/html/body/div[5]/div/div/content[2]',
+                '/html/body/div[7]/div/div/content[2]'
             ),
             timeout=3
         )
@@ -212,6 +214,7 @@ class Uploader(BaseManager):
                 By.XPATH,
                 (
                     '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]',
+                    '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div[2]'
                 ),
                 max_retries=10,
                 timeout=20
@@ -219,30 +222,13 @@ class Uploader(BaseManager):
         except TimeoutException:
             raise UploadTimeout
 
-        response = self.get_text(
-            By.XPATH,
-            (
-                '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[2]/div[1]/div[3]',
-            ),
-            raise_exception=False
-        )
-
-        try:
-            msg, count = response.split('\n')
-            if msg == 'Errors' and int(count) == self.biz_list.count:
-                raise EmptyUpload(
-                    msg=traceback.format_exc()
-                )
-        except (AttributeError, ValueError, UnicodeEncodeError):
-            if PDB_DEBUG:
-                pdb.set_trace()
-            logger(data="Invalid response %s" % response)
-
         # Apply
         self.click_element(
             By.XPATH,
             (
                 '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
+                '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
+                '/html/body/div[5]/div/div[2]/content/div/div[2]/div[3]/div[2]/div[2]',
             ),
             timeout=5
         )
@@ -250,7 +236,10 @@ class Uploader(BaseManager):
         # Review changes
         success = self.click_element(
             By.XPATH,
-            '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div',
+            (
+                '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div',
+                '/html/body/div[4]/c-wiz[3]/div[2]/div[1]/c-wiz/div/div[1]/c-wiz/div/div[2]/div'
+            ),
             timeout=20,
             raise_exception=False,
         )
@@ -259,7 +248,7 @@ class Uploader(BaseManager):
             self.click_element(
                 By.XPATH,
                 (
-                    '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[3]/div[2]/div'
+                    '/html/body/div[4]/div[4]/div/div[2]/content/div/div[2]/div[3]/div[2]/div',
                 ),
                 timeout=5,
             )
@@ -269,6 +258,10 @@ class Uploader(BaseManager):
     def do_verification(self):
         url_old = 'https://business.google.com/manage'
         url_new = 'https://business.google.com/locations'
+
+        text = self.get_text(By.CSS_SELECTOR, 'body')
+        if "You haven't added any locations'text" in text:
+            raise EmptyUpload
 
         print('\n\n\nStarting verification\n\n\n')
 
@@ -687,6 +680,8 @@ class Uploader(BaseManager):
             )
         else:
             logger(instance=self.biz_list, data="Unable to delete businesses.")
+            if PDB_DEBUG:
+                pdb.set_trace()
             return
 
         time.sleep(5)
@@ -695,7 +690,9 @@ class Uploader(BaseManager):
         )
 
         if not rows:
-            logger(instance=self.biz_list, data="Unable to delete businesses.")
+            logger(instance=self.biz_list, data="No business to be deleted.")
+            if PDB_DEBUG:
+                pdb.set_trace()
             return
 
         selected = 0
@@ -740,7 +737,9 @@ class Uploader(BaseManager):
             selected += 1
 
         if not selected:
-            logger(instance=self.biz_list, data="Unable to delete businesses.")
+            logger(instance=self.biz_list, data="Unable to select businesses.")
+            if PDB_DEBUG:
+                pdb.set_trace()
             return
 
         # Trick
@@ -765,7 +764,9 @@ class Uploader(BaseManager):
         )
 
         if not success:
-            logger(instance=self.biz_list, data="Unable to delete businesses.")
+            logger(instance=self.biz_list, data="Unable to click remove.")
+            if PDB_DEBUG:
+                pdb.set_trace()
             return
 
         self.click_element(
@@ -778,6 +779,13 @@ class Uploader(BaseManager):
 
         time.sleep(selected + 5)
         if clean_listing:
+            for biz in self.biz_list:
+                if biz.date_success:
+                    continue
+                try:
+                    biz.report_fail()
+                except Exception:
+                    continue
             self.biz_list = None
 
     def handle(self, *args, **kwargs):
