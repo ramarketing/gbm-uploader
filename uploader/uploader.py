@@ -303,6 +303,9 @@ class Uploader(BaseManager):
                 By.XPATH,
                 '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
             )
+        else:
+            if PDB_DEBUG:
+                pdb.set_trace()
 
         time.sleep(5)
 
@@ -667,7 +670,7 @@ class Uploader(BaseManager):
             By.XPATH,
             (
                 '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
-                '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[1]/div[1]/div[4]'
+                '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]'
             ),
             move=True,
             raise_exception=False
