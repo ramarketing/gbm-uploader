@@ -679,7 +679,10 @@ class Uploader(BaseManager):
                 '/html/body/div[7]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
             )
         else:
-            logger(instance=self.biz_list, data="Unable to delete businesses.")
+            logger(
+                instance=self.biz_list,
+                data="Unable to delete because coudn't change page size."
+            )
             if PDB_DEBUG:
                 pdb.set_trace()
             return
