@@ -78,3 +78,5 @@ target/
 # Bower
 node_modules/
 bower_components/
+uploader/img/*.*
+!uploader/img/.gitkeep

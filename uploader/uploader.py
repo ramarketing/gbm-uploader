@@ -1,8 +1,10 @@
+import json
 import os
 import platform
 from random import randint
 import time
 import traceback
+import urllib.parse as urlparse
 
 from selenium import webdriver
 from selenium.common.exceptions import (
@@ -19,9 +21,14 @@ from exceptions import (
     EmptyUpload, UploadTimeout
 )
 from services import BusinessService, CredentialService
-from config import BASE_DIR, PDB_DEBUG, PER_CREDENTIAL, WAIT_TIME
+from captcha import HttpClient, AccessDeniedException
+from config import (
+    BASE_DIR, CAPTCHA_PASSWORD, CAPTCHA_USERNAME, PDB_DEBUG, PER_CREDENTIAL,
+    WAIT_TIME
+)
 from constants import TEXT_PHONE_VERIFICATION
 from logger import UploaderLogger
+from utils import save_image_from_url
 
 if PDB_DEBUG:
     import pdb
@@ -104,6 +111,20 @@ class BaseManager:
         return element.text
 
     @perform_action
+    def get_element(self, by, selector, source=None, *args, **kwargs):
+        source = source or self.driver
+        element = source.find_element(by, selector)
+        return element
+
+    @perform_action
+    def get_elements(self, by, selector, source=None, *args, **kwargs):
+        source = source or self.driver
+        elements = source.find_elements(by, selector)
+        if len(elements) == 0:
+            raise WebDriverException
+        return elements
+
+    @perform_action
     def fill_input(self, by, selector, content, source=None, *args, **kwargs):
         source = source or self.driver
         element = source.find_element(by, selector)
@@ -150,9 +171,55 @@ class Uploader(BaseManager):
             credential.password + Keys.RETURN
         )
 
+        client = None
+        captcha = None
+
+        while self.get_element(
+            By.ID, 'captchaimg', timeout=5, raise_exception=False
+        ):
+            if captcha:
+                client.report(captcha["captcha"])
+            recaptcha = self.get_element(
+                By.ID, 'captchaimg', timeout=5, raise_exception=True
+            )
+            url = recaptcha.get_attribute('src')
+            image_path = save_image_from_url(url, 'captcha.jpg')
+            client = HttpClient(CAPTCHA_USERNAME, CAPTCHA_PASSWORD)
+
+            try:
+                client.get_balance()
+                captcha = client.decode(image_path)
+                if captcha:
+                    logger(
+                        instance=captcha,
+                        data="CAPTCHA %s solved: %s" % (
+                            captcha["captcha"], captcha["text"]
+                        )
+                    )
+
+                    if '':  # check if the CAPTCHA was incorrectly solved
+                        client.report(captcha["captcha"])
+                        raise CredentialBypass
+
+                    self.fill_input(
+                        By.NAME,
+                        'password',
+                        credential.password
+                    )
+                    self.fill_input(
+                        By.CSS_SELECTOR,
+                        'input[type="text"]',
+                        captcha["text"] + Keys.RETURN
+                    )
+            except AccessDeniedException:
+                raise CredentialInvalid(
+                    'Access to DBC API denied, check '
+                    'your credentials and/or balance'
+                )
+
         success = self.click_element(
-            By.XPATH,
-            '//div[@data-challengetype="12"]',
+            By.ID,
+            'knowledgePreregisteredEmailResponse',
             raise_exception=False,
             timeout=randint(3, 7)
         )
@@ -181,27 +248,95 @@ class Uploader(BaseManager):
         self.driver.get('https://business.google.com/locations')
 
         body = self.driver.find_element(By.CSS_SELECTOR, 'body')
-        if "You haven't added any locations" not in body.text:
+        if (
+            "You haven't added any locations" not in body.text and
+            'У вас нет адресов' not in body.text
+        ):
             raise CredentialPendingVerification(
                 msg="Credential has business to be verified."
             )
 
-        self.click_element(
-            By.XPATH,
-            (
-                '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div',
-                '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div'
+        def pre_upload():
+            # Add locations
+            self.click_element(
+                By.XPATH,
+                (
+                    '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div',
+                    '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/content/div/div/div/div/div'
+                )
             )
+
+            # Import locations
+            self.click_element(
+                By.XPATH,
+                (
+                    '/html/body/div[5]/div/div/content[2]',
+                    '/html/body/div[7]/div/div/content[2]'
+                ),
+                timeout=3
+            )
+
+        pre_upload()
+
+        iframe = self.get_element(
+            By.CSS_SELECTOR,
+            'iframe[src^="https://www.google.com/recaptcha"]',
+            raise_exception=False,
+            timeout=5
         )
 
-        self.click_element(
-            By.XPATH,
-            (
-                '/html/body/div[5]/div/div/content[2]',
-                '/html/body/div[7]/div/div/content[2]'
-            ),
-            timeout=3
-        )
+        while iframe:
+            if not all([CAPTCHA_USERNAME, CAPTCHA_PASSWORD]):
+                raise CredentialInvalid("Captcha solver not added.")
+
+            element = self.get_element(By.CLASS_NAME, 'g-recaptcha')
+            googlekey = element.get_attribute('data-sitekey')
+
+            if isinstance(googlekey, list):
+                googlekey = googlekey[0]
+
+            captcha_dict = json.dumps({
+                'googlekey': googlekey,
+                'pageurl': self.driver.current_url.split('?')[0]
+            })
+            logger(data=captcha_dict)
+            client = HttpClient(CAPTCHA_USERNAME, CAPTCHA_PASSWORD)
+
+            try:
+                client.get_balance()
+                captcha = client.decode(type=4, token_params=captcha_dict)
+
+                if captcha:
+                    logger(
+                        instance=captcha,
+                        data="CAPTCHA %s solved: %s" % (
+                            captcha["captcha"], captcha["text"]
+                        )
+                    )
+
+                    if '':  # check if the CAPTCHA was incorrectly solved
+                        client.report(captcha["captcha"])
+                        raise CredentialBypass
+
+                    element = self.get_element(By.ID, 'g-recaptcha-response')
+                    self.driver.execute_script(
+                        "arguments[0].innerHTML='{}'".format(
+                            captcha['text']), element
+                    )
+                    self.get_element(By.TAG_NAME, 'form').submit()
+                    pre_upload()
+                    iframe = self.get_element(
+                        By.CSS_SELECTOR,
+                        'iframe[src^="https://www.google.com/recaptcha"]',
+                        raise_exception=False,
+                        timeout=5
+                    )
+            except AccessDeniedException:
+                raise CredentialInvalid(
+                    'Access to DBC API denied, check '
+                    'your credentials and/or balance'
+                )
+
         try:
             self.fill_input(
                 By.NAME,
@@ -260,7 +395,10 @@ class Uploader(BaseManager):
         url_new = 'https://business.google.com/locations'
 
         text = self.get_text(By.CSS_SELECTOR, 'body')
-        if "You haven't added any locations'text" in text:
+        if (
+            "You haven't added any locations'text" in text or
+            'У вас нет адресов' in text
+        ):
             raise EmptyUpload
 
         print('\n\n\nStarting verification\n\n\n')
