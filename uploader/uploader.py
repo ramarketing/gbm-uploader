@@ -286,56 +286,14 @@ class Uploader(BaseManager):
         )
 
         while iframe:
-            if not all([CAPTCHA_USERNAME, CAPTCHA_PASSWORD]):
-                raise CredentialInvalid("Captcha solver not added.")
-
-            element = self.get_element(By.CLASS_NAME, 'g-recaptcha')
-            googlekey = element.get_attribute('data-sitekey')
-
-            if isinstance(googlekey, list):
-                googlekey = googlekey[0]
-
-            captcha_dict = json.dumps({
-                'googlekey': googlekey,
-                'pageurl': self.driver.current_url.split('?')[0]
-            })
-            logger(data=captcha_dict)
-            client = HttpClient(CAPTCHA_USERNAME, CAPTCHA_PASSWORD)
-
-            try:
-                client.get_balance()
-                captcha = client.decode(type=4, token_params=captcha_dict)
-
-                if captcha:
-                    logger(
-                        instance=captcha,
-                        data="CAPTCHA %s solved: %s" % (
-                            captcha["captcha"], captcha["text"]
-                        )
-                    )
-
-                    if '':  # check if the CAPTCHA was incorrectly solved
-                        client.report(captcha["captcha"])
-                        raise CredentialBypass
-
-                    element = self.get_element(By.ID, 'g-recaptcha-response')
-                    self.driver.execute_script(
-                        "arguments[0].innerHTML='{}'".format(
-                            captcha['text']), element
-                    )
-                    self.get_element(By.TAG_NAME, 'form').submit()
-                    pre_upload()
-                    iframe = self.get_element(
-                        By.CSS_SELECTOR,
-                        'iframe[src^="https://www.google.com/recaptcha"]',
-                        raise_exception=False,
-                        timeout=5
-                    )
-            except AccessDeniedException:
-                raise CredentialInvalid(
-                    'Access to DBC API denied, check '
-                    'your credentials and/or balance'
-                )
+            import pdb
+            pdb.set_trace()
+            iframe = self.get_element(
+                By.CSS_SELECTOR,
+                'iframe[src^="https://www.google.com/recaptcha"]',
+                raise_exception=False,
+                timeout=5
+            )
 
         try:
             self.fill_input(
