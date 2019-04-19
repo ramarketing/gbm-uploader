@@ -285,15 +285,9 @@ class Uploader(BaseManager):
             timeout=5
         )
 
-        while iframe:
+        if iframe:
             import pdb
             pdb.set_trace()
-            iframe = self.get_element(
-                By.CSS_SELECTOR,
-                'iframe[src^="https://www.google.com/recaptcha"]',
-                raise_exception=False,
-                timeout=5
-            )
 
         try:
             self.fill_input(
