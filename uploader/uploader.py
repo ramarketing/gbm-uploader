@@ -288,6 +288,47 @@ class Uploader(BaseManager):
         if iframe:
             import pdb
             pdb.set_trace()
+            '''
+            googlekey = self.get_element(
+                By.CLASS_NAME, 'g-recaptcha'
+            ).get_attribute('data-sitekey')
+
+            client = HttpClient(CAPTCHA_USERNAME, CAPTCHA_PASSWORD)
+
+            try:
+                client.get_balance()
+                captcha = client.decode(image_path, type=4)
+                if captcha:
+                    logger(
+                        instance=captcha,
+                        data="CAPTCHA %s solved: %s" % (
+                            captcha["captcha"], captcha["text"]
+                        )
+                    )
+
+                    if '':  # check if the CAPTCHA was incorrectly solved
+                        client.report(captcha["captcha"])
+                        raise CredentialBypass
+
+                    self.fill_input(
+                        By.NAME,
+                        'password',
+                        credential.password
+                    )
+                    self.fill_input(
+                        By.CSS_SELECTOR,
+                        'input[type="text"]',
+                        captcha["text"] + Keys.RETURN
+                    )
+            except AccessDeniedException:
+                raise CredentialInvalid(
+                    'Access to DBC API denied, check '
+                    'your credentials and/or balance'
+                )
+
+            import pdb
+            pdb.set_trace()
+            '''
 
         try:
             self.fill_input(
@@ -601,7 +642,10 @@ class Uploader(BaseManager):
 
         element = row.find_element(
             By.XPATH, 'div[2]/div[4]/div[2]/div/div/div')
-        biz = self.biz_list.get_by_id(int(id_))
+        try:
+            biz = self.biz_list.get_by_id(int(id_))
+        except ValueError:
+            biz = None
 
         if not biz:
             try:
