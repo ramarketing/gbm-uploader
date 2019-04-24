@@ -859,7 +859,10 @@ class RenamerSelenium(BaseSelenium):
         # Click "Get started" again
         self.click_element(
             By.XPATH,
-            '//*[@id="js"]/div[10]/div/div[2]/div[3]/div',
+            (
+                '//*[@id="js"]/div[10]/div/div[2]/div[3]/div',
+                '//*[@id="js"]/div[9]/div/div[2]/div[3]/div'
+            ),
             raise_exception=False,
             timeout=self.WAIT_BEFORE_INPUT
         )
@@ -890,7 +893,7 @@ class RenamerSelenium(BaseSelenium):
             '//body'
         ).text
 
-        if 'Pending' in text:
+        if 'This location has been suspended due to quality issues.' in text:
             self.logger(instance=self.entity, data={'status': 'Pending'})
             self.entity.report_pending()
             return
