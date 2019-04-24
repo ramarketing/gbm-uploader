@@ -1,6 +1,5 @@
 from bot.renamer.selenium import RenamerSelenium
 from bot.renamer.service import BusinesService
-from bot.logger import Logger
 
 
 def run(*args, **kwargs):

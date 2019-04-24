@@ -34,7 +34,7 @@ class BaseEntity:
         self.update(date_fail=datetime.now())
         return self.service.request('post', pk=self.pk, extra='set-fail')
 
-    def report_success(self, credential, **kwargs):
+    def report_success(self, **kwargs):
         if self.date_success:
             return False
         self.update(date_success=datetime.now())
