@@ -64,7 +64,7 @@ class RenamerSelenium(BaseSelenium):
         self.do_phone()
 
         self.driver.close()
-        self.driver.switch_to_window(self.driver.window_handles[0])
+        self.driver.switch_to.window(self.driver.window_handles[0])
 
         self.do_code_send()
         self.get_final_data()
