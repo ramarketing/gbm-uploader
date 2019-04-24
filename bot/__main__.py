@@ -1,6 +1,6 @@
 import sys
 
-from bot.renamer.run import run
+from renamer.run import run
 
 
 if __name__ == '__main__':
