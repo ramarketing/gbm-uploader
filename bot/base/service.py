@@ -3,8 +3,8 @@ from urllib.parse import urlparse, parse_qs
 
 import requests
 
-from bot import config
-from bot.logger import Logger
+import config
+from logger import Logger
 
 
 logging = Logger()

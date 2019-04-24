@@ -9,8 +9,8 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.action_chains import ActionChains
 
-from bot import config
-from bot.logger import Logger
+import config
+from logger import Logger
 
 
 class BaseSelenium:

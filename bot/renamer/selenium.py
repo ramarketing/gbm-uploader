@@ -9,15 +9,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 
-from bot import config
-from bot import constants
-from bot.base.exceptions import (
+import config
+import constants
+from base.exceptions import (
     CaptchaError, CredentialInvalid, EmptyList, EntityInvalid,
     EntityIsSuccess, InvalidValidationMethod, NotFound, MaxRetries
 )
-from bot.base.selenium import BaseSelenium
-from bot.captcha import HttpClient, AccessDeniedException
-from bot.utils import save_image_from_url
+from base.selenium import BaseSelenium
+from captcha import HttpClient, AccessDeniedException
+from utils import save_image_from_url
 
 
 class RenamerSelenium(BaseSelenium):

@@ -1,7 +1,7 @@
 import os
 import requests
 
-from bot import config
+import config
 
 
 def save_image_from_url(url, name):
