@@ -99,7 +99,9 @@ class RenamerSelenium(BaseSelenium):
 
         row = None
         for r in rows:
-            if self.entity.name in r.text or self.entity.final_name in r.text:
+            if 'Publised' in r.text:
+                continue
+            elif self.entity.name in r.text or self.entity.final_name in r.text:
                 row = r
                 break
 
