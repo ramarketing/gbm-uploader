@@ -914,5 +914,6 @@ class RenamerSelenium(BaseSelenium):
             '//*[@id="dcrd-8"]/div/ul/li[2]/a',
         ).get_attribute('href')
 
-        self.logger(data={'gmaps': gmaps, 'gsearch': gsearch})
-        self.entity.report_success()
+        data = {'google_maps': gmaps, 'google_search': gsearch}
+        self.logger(instance=self.entity, data=data)
+        self.entity.report_success(**data)
