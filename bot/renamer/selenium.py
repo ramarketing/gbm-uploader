@@ -241,7 +241,7 @@ class RenamerSelenium(BaseSelenium):
             source=row
         )
 
-        if 'Published' in status.text:
+        if status.text == 'Published':
             raise EntityIsSuccess
 
         element = self.get_element(
