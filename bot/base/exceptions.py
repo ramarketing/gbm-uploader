@@ -21,6 +21,10 @@ class EntityInvalid(GBMException):
     pass
 
 
+class EntityIsSuccess(GBMException):
+    pass
+
+
 class EmptyList(GBMException):
     pass
 

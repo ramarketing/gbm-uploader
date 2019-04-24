@@ -13,7 +13,7 @@ from bot import config
 from bot import constants
 from bot.base.exceptions import (
     CaptchaError, CredentialInvalid, EmptyList, EntityInvalid,
-    InvalidValidationMethod, NotFound, MaxRetries
+    EntityIsSuccess, InvalidValidationMethod, NotFound, MaxRetries
 )
 from bot.base.selenium import BaseSelenium
 from bot.captcha import HttpClient, AccessDeniedException
@@ -34,6 +34,9 @@ class RenamerSelenium(BaseSelenium):
             InvalidValidationMethod
         ):
             self.entity.report_fail()
+            self.quit_driver()
+        except EntityIsSuccess:
+            self.entity.report_success()
             self.quit_driver()
         except Exception as err:
             print(err)
@@ -99,9 +102,7 @@ class RenamerSelenium(BaseSelenium):
 
         row = None
         for r in rows:
-            if 'Publised' in r.text:
-                continue
-            elif self.entity.name in r.text or self.entity.final_name in r.text:
+            if self.entity.name in r.text or self.entity.final_name in r.text:
                 row = r
                 break
 
@@ -233,6 +234,16 @@ class RenamerSelenium(BaseSelenium):
 
     def do_open_verification_tab(self):
         row = self.get_business_row()
+
+        status = self.get_element(
+            By.XPATH,
+            'td[4]',
+            source=row
+        )
+
+        if 'Publised' in status.text:
+            raise EntityIsSuccess
+
         element = self.get_element(
             By.XPATH,
             'td[5]/content/div/div',
