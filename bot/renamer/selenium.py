@@ -887,8 +887,7 @@ class RenamerSelenium(BaseSelenium):
         # Check if is "Pending" or "Suspended"
         text = self.get_element(
             By.XPATH,
-            '//body',
-            timeout=3
+            '//body'
         ).text
 
         if 'Pending' in text:
@@ -903,20 +902,13 @@ class RenamerSelenium(BaseSelenium):
         # Get GMaps link
         gmaps = self.get_element(
             By.XPATH,
-            (
-                '//*[@id="main_viewpane"]/div[2]/c-wiz/c-wiz/div[2]/main/'
-                'div/div/div[2]/div[2]/c-wiz/div/div/ul/li[1]/a'
-            ),
-            timeout=10
+            '//*[@id="dcrd-8"]/div/ul/li[1]/a',
         ).get_attribute('href')
 
         # Get GSearch link
         gsearch = self.get_element(
             By.XPATH,
-            (
-                '//*[@id="main_viewpane"]/div[2]/c-wiz/c-wiz/div[2]/main/'
-                'div/div/div[2]/div[2]/c-wiz/div/div/ul/li[2]/a'
-            )
+            '//*[@id="dcrd-8"]/div/ul/li[2]/a',
         ).get_attribute('href')
 
         self.logger(data={'gmaps': gmaps, 'gsearch': gsearch})
