@@ -65,6 +65,7 @@ class RenamerSelenium(BaseSelenium):
 
         self.do_code_send()
         self.get_final_data()
+        self.quit_driver()
 
     def go_to_edit(self):
         row = self.get_business_row()
@@ -873,9 +874,11 @@ class RenamerSelenium(BaseSelenium):
 
         if 'Pending' in text:
             self.logger(instance=self.entity, data={'status': 'Pending'})
+            self.entity.report_pending()
             return
         elif 'This location has been suspended due to quality issues.' in text:
             self.logger(instance=self.entity, data={'status': 'Suspended'})
+            self.entity.report_fail()
             return
 
         # Get GMaps link
@@ -898,4 +901,4 @@ class RenamerSelenium(BaseSelenium):
         ).get_attribute('href')
 
         self.logger(data={'gmaps': gmaps, 'gsearch': gsearch})
-        self._start_debug()
+        self.entity.report_success()

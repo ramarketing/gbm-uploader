@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bot.base.service import BaseEntity, BaseEntityList, BaseService
 
 
@@ -11,18 +13,11 @@ class Business(BaseEntity):
         )
         return response['msg']
 
-    def request(self, method, endpoint=None, pk=None, extra=None, **kwargs):
-        self.is_valid_method(method)
-        endpoint = self.prepare_endpoint(endpoint=endpoint, pk=pk, extra=extra)
-        skip_token = kwargs.pop('skip_token', False)
-
-        if not skip_token and not self.token:
-            self.authenticate()
-
-        if 'headers' not in kwargs:
-            kwargs['headers'] = self.get_headers()
-
-        return self._request(method, endpoint, **kwargs)
+    def report_pending(self):
+        if self.date_pending:
+            return False
+        self.update(date_pending=datetime.now())
+        return self.service.request('post', pk=self.pk, extra='set-pending')
 
 
 class BusinessList(BaseEntityList):
@@ -35,9 +30,8 @@ class BusinesService(BaseService):
     entity_list = BusinessList
 
     def get_list(self, **kwargs):
-        kwargs['is_renamed'] = 3
-        kwargs['to_rename'] = 2
         kwargs['is_fail'] = 3
+        kwargs['is_pending'] = 3
         kwargs['is_success'] = 3
-        kwargs['is_validated'] = 3
+        kwargs['to_rename'] = 2
         return super().get_list(**kwargs)
