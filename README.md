@@ -12,6 +12,7 @@ This Python script allows you to upload CSV files with business to Google Busine
 ```shell
 git clone https://github.com/ramarketing/gbm-uploader.git
 cd gbm-uploader
+git checkout renamer
 ```
 
 2. (Optional) Install and activate your `virtualenv`
@@ -28,8 +29,8 @@ pip install -r requirements.txt
 
 4. Create your `.env` file, change it and save it.
 ```shell
-copy uploader\.env.save uploader\.env
-notepad uploader\.env
+copy .env.save .env
+notepad .env
 ```
 
 5. Type the information provided, save and close.
@@ -39,30 +40,5 @@ notepad uploader\.env
 ```shell
 cd ~/Sites/gbm-uploader  # Recommended path
 env\Scripts\activate
-python uploader
+python bot
 ```
-
-## Optional arguments
-1. You can use the argument "city" to obtain results on a specific city.
-
-```shell
-python uploader city="Los Angeles"
-```
-
-The above command will only upload businesses from "Los Angeles".
-
-2. You can use the argument "max" in case you only want N success businesses.
-
-```shell
-python uploader max=10
-```
-
-The above command will stop after finding 10 success businesses.
-
-3. You can combine both arguments
-
-```shell
-python uploader city="Los Angeles" max=10
-```
-
-The above command will stop after finding 10 success businesses on "Los Angeles".
