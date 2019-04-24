@@ -172,6 +172,12 @@ class RenamerSelenium(BaseSelenium):
                             'input[type="text"]',
                             captcha_solution["text"] + Keys.RETURN
                         )
+                        captcha_element = self.get_element(
+                            By.ID,
+                            'captchaimg',
+                            timeout=5,
+                            raise_exception=False
+                        )
             except AccessDeniedException:
                 raise CaptchaError(
                     data=(
