@@ -26,6 +26,12 @@ class BaseSelenium:
             )
         else:
             driver = webdriver.Chrome()
+
+        while len(driver.window_handles) > 1:
+            driver.switch_to.window(driver.window_handles[1])
+            driver.close()
+            self._wait(2)
+
         return driver
 
     def quit_driver(self):
