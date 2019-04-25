@@ -36,7 +36,8 @@ class RenamerSelenium(BaseSelenium):
             self.entity.report_fail()
             self.quit_driver()
         except EntityIsSuccess:
-            # self.entity.report_success()  # Need to retrieve data before reporting succcess
+            # # Need to retrieve data before reporting succcess
+            # self.entity.report_success()
             self.quit_driver()
         except Exception as err:
             print(err)
@@ -438,6 +439,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[6]'
             ),
+            move=True,
             timeout=self.WAIT_BEFORE_INPUT
         )
         elements = self.get_elements(
@@ -477,6 +479,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[7]'
             ),
+            move=True,
             timeout=self.WAIT_BEFORE_INPUT
         )
         self.click_element(
@@ -510,6 +513,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[9]'
             ),
+            move=True,
             timeout=self.WAIT_BEFORE_INPUT
         )
 
