@@ -17,7 +17,7 @@ class BaseSelenium:
     def __init__(self, *args, **kwargs):
         self.logger = Logger()
 
-    def get_driver(self):
+    def get_driver(self, size=None):
         if hasattr(self, 'driver') and self.driver:
             return self.driver
         elif platform.system() == 'Windows':
@@ -26,6 +26,13 @@ class BaseSelenium:
             )
         else:
             driver = webdriver.Chrome()
+
+        if size:
+            try:
+                width, height = size
+                driver.set_window_size(int(width), int(height))
+            except (TypeError, ValueError):
+                pass
 
         while len(driver.window_handles) > 1:
             driver.switch_to.window(driver.window_handles[1])

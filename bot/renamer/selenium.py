@@ -46,7 +46,7 @@ class RenamerSelenium(BaseSelenium):
             self.quit_driver()
 
     def handle(self):
-        self.driver = self.get_driver()
+        self.driver = self.get_driver(size=(1200, 700))
         self.do_login()
         self.do_open_verification_tab()
         self.go_to_edit()
