@@ -36,7 +36,7 @@ class RenamerSelenium(BaseSelenium):
             self.entity.report_fail()
             self.quit_driver()
         except EntityIsSuccess:
-            self.entity.report_success()
+            # self.entity.report_success()  # Need to retrieve data before reporting succcess
             self.quit_driver()
         except Exception as err:
             print(err)
@@ -237,16 +237,33 @@ class RenamerSelenium(BaseSelenium):
 
         status = self.get_element(
             By.XPATH,
-            'td[4]',
+            'td[3]',
             source=row
-        )
+        ).text
 
-        if status.text == 'Published':
+        if status.strip() not in (
+            'Verification required',
+            'Pending verification',
+            'Suspended',
+            'Published'
+        ):
+            status = self.get_element(
+                By.XPATH,
+                'td[4]',
+                source=row
+            ).text
+
+        if status.strip() == 'Published':
             raise EntityIsSuccess
+        elif status.strip() == 'Suspended':
+            raise EntityInvalid
 
         element = self.get_element(
             By.XPATH,
-            'td[5]/content/div/div',
+            (
+                'td[4]/content/div/div',
+                'td[5]/content/div/div'
+            ),
             source=row
         )
 

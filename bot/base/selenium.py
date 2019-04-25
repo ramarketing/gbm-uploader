@@ -71,31 +71,24 @@ class BaseSelenium:
                         return success
 
                 try:
-                    if isinstance(selector, (list, tuple)):
-                        for s in selector:
-                            try:
-                                self.logger(data={
-                                    'action': func.__name__,
-                                    'selector': s,
-                                    'args': args,
-                                    'retry': retry,
-                                })
-                                response = func(self, by, s, *args, **kwargs)
-                                success = True
-                                break
-                            except Exception:
-                                pass
-                        if not success:
-                            raise TimeoutException
-                    else:
-                        self.logger(data={
-                            'action': func.__name__,
-                            'selector': selector,
-                            'args': args,
-                            'retry': retry,
-                        })
-                        response = func(self, by, selector, *args, **kwargs)
-                        success = True
+                    if not isinstance(selector, (list, tuple)):
+                        selector = [selector]
+
+                    for s in selector:
+                        try:
+                            self.logger(data={
+                                'action': func.__name__,
+                                'selector': s,
+                                'args': args,
+                                'retry': retry,
+                            })
+                            response = func(self, by, s, *args, **kwargs)
+                            success = True
+                            break
+                        except Exception:
+                            pass
+                    if not success:
+                        raise TimeoutException
                 except (TimeoutException, WebDriverException):
                     self._wait(1)
 
