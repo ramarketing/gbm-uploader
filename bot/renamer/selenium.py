@@ -745,7 +745,9 @@ class RenamerSelenium(BaseSelenium):
         # Input full address
         xpath_input_address = (
             '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/div[3]/'
-            'div[1]/div/div/div[2]/div/div/div[2]/input'
+            'div[1]/div/div/div[2]/div/div/div[2]/input',
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/div[3]/'
+            'div[1]/c-wiz/c-wiz/div/div/div[4]/div/div[1]/div/div[1]/input'
         )
         self.fill_input(
             By.XPATH,
@@ -761,41 +763,55 @@ class RenamerSelenium(BaseSelenium):
         )
 
         # Zip Code
+        xpath_zipcode = (
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
+            'div[3]/div[1]/div/div/div[2]/div/div/div[6]/input',
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
+            'div[3]/div[1]/c-wiz/c-wiz/div/div/div[7]/div/div[1]/div/'
+            'div[1]/input',
+        )
+
         self.fill_input(
             By.XPATH,
-            (
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
-                'div[3]/div[1]/div/div/div[2]/div/div/div[6]/input'
-            ),
+            xpath_zipcode,
             self.entity.final_zip_code,
             timeout=2
         )
 
         # City
+        xpath_city = (
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
+            'div[3]/div[1]/div/div/div[2]/div/div/div[4]/input',
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
+            'div[3]/div[1]/c-wiz/c-wiz/div/div/div[5]/div/div[1]/div/'
+            'div[1]/input',
+        )
         self.fill_input(
             By.XPATH,
-            (
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
-                'div[3]/div[1]/div/div/div[2]/div/div/div[4]/input'
-            ),
+            xpath_city,
             self.entity.final_city,
             timeout=2
         )
 
         # State
+        xpath_state = (
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
+            'div[3]/div[1]/div/div/div[2]/div/div/div[5]/div[2]',
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
+            'div[3]/div[1]/c-wiz/c-wiz/div/div/div[6]/div[1]'
+        )
         self.click_element(
             By.XPATH,
-            (
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
-                'div[3]/div[1]/div/div/div[2]/div/div/div[5]/div[2]'
-            ),
+            xpath_state,
             timeout=2
         )
         elements = self.get_elements(
             By.XPATH,
             (
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
-                'div[3]/div[1]/div/div/div[2]/div/div/div[5]/div[3]/div'
+                'div[3]/div[1]/div/div/div[2]/div/div/div[5]/div[3]/div',
+                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div/'
+                'div[3]/div[1]/c-wiz/c-wiz/div/div/div[6]/div[1]/div[2]/div'
             )
         )
 
