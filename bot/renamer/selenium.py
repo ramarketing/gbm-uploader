@@ -74,7 +74,10 @@ class RenamerSelenium(BaseSelenium):
         row = self.get_business_row()
         self.click_element(
             By.XPATH,
-            'td[3]/content/a',
+            (
+                'td[2]/content/a',
+                'td[3]/content/a',
+            ),
             source=row
         )
         current_url = self.driver.current_url
