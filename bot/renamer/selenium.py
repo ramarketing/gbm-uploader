@@ -422,7 +422,9 @@ class RenamerSelenium(BaseSelenium):
             By.XPATH,
             (
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
-                'div/div[1]/div/div/div/div/div/div/div[2]/div/div/div[1]'
+                'div/div[1]/div/div/div/div/div/div/div[2]/div/div/div[1]',
+                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
+                'div/div[1]/div/div/div/div/div/div/div[3]/div/div/div[1]'
             )
         )
         self.click_element(
@@ -547,13 +549,20 @@ class RenamerSelenium(BaseSelenium):
             move=True,
             timeout=self.WAIT_BEFORE_NEXT
         )
-        source = self.get_elements(
+
+        elements = []
+        elements.append(self.get_element(
             By.XPATH,
-            '//*[@id="attr-dialog-content"]/div',
+            '//*[@id="attr-dialog-content"]/div[9]',
             timeout=self.WAIT_BEFORE_INPUT
-        )
-        to_clic = randint(1, 2)
-        source = source[to_clic]
+        ))
+        elements.append(self.get_element(
+            By.XPATH,
+            '//*[@id="attr-dialog-content"]/div[10]',
+            timeout=self.WAIT_BEFORE_INPUT
+        ))
+        to_clic = randint(0, 1)
+        source = elements[to_clic]
 
         element = self.get_element(By.XPATH, 'div', source=source)
         if not element.get_attribute('aria-checked') == 'true':
