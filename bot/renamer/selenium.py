@@ -383,7 +383,7 @@ class RenamerSelenium(BaseSelenium):
             By.XPATH,
             (
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
-                'div/div[1]/div/div[1]/div[2]/div/div',
+                'div/div[1]/div/div[1]/div[2]/div/div/div[1]'
             ),
             timeout=5
         )
