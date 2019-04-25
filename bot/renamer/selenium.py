@@ -554,14 +554,22 @@ class RenamerSelenium(BaseSelenium):
         elements.append(self.get_element(
             By.XPATH,
             '//*[@id="attr-dialog-content"]/div[9]',
-            timeout=self.WAIT_BEFORE_INPUT
+            timeout=self.WAIT_BEFORE_INPUT,
+            raise_exception=False
         ))
         elements.append(self.get_element(
             By.XPATH,
             '//*[@id="attr-dialog-content"]/div[10]',
-            timeout=self.WAIT_BEFORE_INPUT
+            raise_exception=False
         ))
         to_clic = randint(0, 1)
+
+        if not len(elements):
+            elements = self.get_elements(
+                By.XPATH, '//*[@id="attr-dialog-content"]/div',
+            )
+            to_clic = randint(1, 2)
+
         source = elements[to_clic]
 
         element = self.get_element(By.XPATH, 'div', source=source)
