@@ -424,7 +424,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
                 'div/div[1]/div/div/div/div/div/div/div[2]/div/div/div[1]',
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
-                'div/div[1]/div/div/div/div/div/div/div[3]/div/div/div[1]'
+                'div/div[1]/div/div/div/div/div/div/div[3]/div/div/div[1]',
             )
         )
         self.click_element(
