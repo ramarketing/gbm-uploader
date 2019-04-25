@@ -564,7 +564,7 @@ class RenamerSelenium(BaseSelenium):
         ))
         to_clic = randint(0, 1)
 
-        if not len(elements):
+        if elements[0] == False:
             elements = self.get_elements(
                 By.XPATH, '//*[@id="attr-dialog-content"]/div'
             )
