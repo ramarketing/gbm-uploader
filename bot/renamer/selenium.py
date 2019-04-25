@@ -55,6 +55,7 @@ class RenamerSelenium(BaseSelenium):
         self.do_hours()
         self.do_special_hours()
         self.do_website()
+        self.do_attributes()
         self.do_description()
         self.do_opening_date()
 
@@ -382,7 +383,8 @@ class RenamerSelenium(BaseSelenium):
             (
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
                 'div/div[1]/div/div[1]/div[2]/div/div',
-            )
+            ),
+            timeout=5
         )
         self.click_element(
             By.XPATH,
@@ -548,7 +550,11 @@ class RenamerSelenium(BaseSelenium):
         )
         to_clic = randint(1, 2)
         source = source[to_clic]
-        self.click_element(By.XPATH, 'div', source=source)
+
+        element = self.get_element(By.XPATH, 'div', source=source)
+        if not element.get_attribute('aria-checked') == 'true':
+            element.click()
+
         self.click_element(
             By.XPATH,
             '//*[@id="js"]/div[10]/div/div[2]/content/div/div[5]/div[2]'
