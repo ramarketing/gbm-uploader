@@ -538,6 +538,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[10]'
             ),
+            move=True,
             timeout=self.WAIT_BEFORE_NEXT
         )
         source = self.get_elements(
@@ -562,6 +563,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[11]'
             ),
+            move=True,
             timeout=self.WAIT_BEFORE_NEXT
         )
 
@@ -588,6 +590,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[12]'
             ),
+            move=True,
             timeout=self.WAIT_BEFORE_NEXT
         )
 
@@ -717,7 +720,8 @@ class RenamerSelenium(BaseSelenium):
             (
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[4]'
-            )
+            ),
+            move=True,
         )
         self.click_element(
             By.XPATH,
@@ -812,6 +816,7 @@ class RenamerSelenium(BaseSelenium):
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[1]/div[2]/'
                 'content/div[8]'
             ),
+            move=True,
             timeout=self.WAIT_BEFORE_NEXT
         )
 
