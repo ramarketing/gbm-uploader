@@ -566,14 +566,12 @@ class RenamerSelenium(BaseSelenium):
 
         if not len(elements):
             elements = self.get_elements(
-                By.XPATH, '//*[@id="attr-dialog-content"]/div',
+                By.XPATH, '//*[@id="attr-dialog-content"]/div'
             )
             to_clic = randint(1, 2)
 
-        source = elements[to_clic]
-
-        element = self.get_element(By.XPATH, 'div', source=source)
-        if not element.get_attribute('aria-checked') == 'true':
+        element = elements[to_clic]
+        if element.get_attribute('aria-checked') != 'true':
             element.click()
 
         self.click_element(
