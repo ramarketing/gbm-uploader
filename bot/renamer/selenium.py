@@ -570,6 +570,8 @@ class RenamerSelenium(BaseSelenium):
             )
             to_clic = randint(1, 2)
 
+        self._start_debug()
+
         element = elements[to_clic]
         if element.get_attribute('aria-checked') != 'true':
             element.click()
