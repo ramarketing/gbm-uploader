@@ -921,7 +921,8 @@ class RenamerSelenium(BaseSelenium):
             (
                 '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/'
                 'div[1]/div[3]/button'
-            )
+            ),
+            timeout=self.WAIT_BEFORE_INPUT
         )
         self._wait(60*5)  # 5 Minutes
 
