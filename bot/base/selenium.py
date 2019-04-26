@@ -8,6 +8,7 @@ from selenium.common.exceptions import (
     TimeoutException, WebDriverException
 )
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 
 import config
 from logger import Logger
@@ -20,12 +21,23 @@ class BaseSelenium:
     def get_driver(self, size=None):
         if hasattr(self, 'driver') and self.driver:
             return self.driver
-        elif platform.system() == 'Windows':
+
+        # user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+
+        options = Options()
+        options.add_argument('disable-infobars')
+        # options.add_argument('headless')
+        # options.add_argument(f'user-agent={user_agent}')
+
+        if platform.system() == 'Windows':
             driver = webdriver.Chrome(
+                chrome_options=options,
                 executable_path=os.path.join(config.BASE_DIR, 'chromedriver')
             )
         else:
-            driver = webdriver.Chrome()
+            driver = webdriver.Chrome(
+                chrome_options=options
+            )
 
         if size:
             try:
