@@ -563,16 +563,23 @@ class RenamerSelenium(BaseSelenium):
             raise_exception=False
         ))
         to_clic = randint(0, 1)
+        special = False
 
-        if elements[0] == False:
+        if elements[0] is False:
             elements = self.get_elements(
-                By.XPATH, '//*[@id="attr-dialog-content"]/div'
+                By.XPATH,
+                '//*[@id="attr-dialog-content"]/div'
             )
             to_clic = randint(1, 2)
+            special = True
 
         self._start_debug()
 
         element = elements[to_clic]
+
+        if special:
+            element = self.get_element(By.XPATH, 'div', source=element)
+
         if element.get_attribute('aria-checked') != 'true':
             element.click()
 

@@ -24,7 +24,7 @@ class BusinessList(BaseEntityList):
     entity = Business
 
 
-class BusinesService(BaseService):
+class BusinessService(BaseService):
     endpoint = '/renamer/business/'
     entity = Business
     entity_list = BusinessList
