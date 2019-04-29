@@ -40,5 +40,5 @@ notepad .env
 ```shell
 cd ~/Sites/gbm-uploader  # Recommended path
 env\Scripts\activate
-python bot
+python bot renamer
 ```
