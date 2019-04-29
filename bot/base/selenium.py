@@ -26,6 +26,10 @@ class BaseSelenium:
 
         options = Options()
         options.add_argument('disable-infobars')
+        options.add_argument('disable-extensions')
+        options.add_argument('profile-directory=Default')
+        options.add_argument('incognito')
+        options.add_argument('disable-plugins-discovery')
         # options.add_argument('headless')
         # options.add_argument(f'user-agent={user_agent}')
 
@@ -152,9 +156,17 @@ class BaseSelenium:
         return element.text
 
     @perform_action
-    def get_element(self, by, selector, source=None, *args, **kwargs):
+    def get_element(
+        self, by, selector, source=None, move=True, *args, **kwargs
+    ):
         source = source or self.driver
         element = source.find_element(by, selector)
+
+        if move:
+            ActionChains(self.driver) \
+                .move_to_element(source or element) \
+                .perform()
+
         return element
 
     @perform_action

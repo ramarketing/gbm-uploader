@@ -39,3 +39,7 @@ class NotFound(GBMException):
 
 class MaxRetries(GBMException):
     pass
+
+
+class TerminatedByUser(GBMException):
+    pass
