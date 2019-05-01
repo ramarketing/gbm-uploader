@@ -979,11 +979,11 @@ class RenamerSelenium(BaseSelenium):
 
         if 'This location has been suspended due to quality issues.' in text:
             self.logger(instance=self.entity, data={'status': 'Pending'})
-            self.entity.report_pending()
-            return
-        elif 'This location has been suspended due to quality issues.' in text:
-            self.logger(instance=self.entity, data={'status': 'Suspended'})
             self.entity.report_fail()
+            return
+        elif 'Your business is verified. Listings may be reviewed ' in text:
+            self.logger(instance=self.entity, data={'status': 'Suspended'})
+            self.entity.report_pending()
             return
 
         # Get GMaps link
