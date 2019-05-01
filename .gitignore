@@ -80,3 +80,4 @@ node_modules/
 bower_components/
 uploader/img/*.*
 !uploader/img/.gitkeep
+img/captcha.jpg

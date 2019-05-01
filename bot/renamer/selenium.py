@@ -286,8 +286,7 @@ class RenamerSelenium(BaseSelenium):
                 .perform()
 
         self.driver.switch_to.window(self.driver.window_handles[1])
-
-        text = self.get_element(By.XPATH, '//body').text.strip()
+        text = self.get_element(By.XPATH, '//body', timeout=5).text.strip()
 
         if 'Is this your business' in text:
             elements = self.get_elements(
