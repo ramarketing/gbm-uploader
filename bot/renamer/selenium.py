@@ -708,18 +708,20 @@ class RenamerSelenium(BaseSelenium):
         xpath_phone = (
             '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div/'
             'div[1]/div/div[1]/h3',
-            '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/h3/strong'
+            '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/h3/strong',
         )
 
         try:
             phone_number = self.get_element(
                 By.XPATH,
-                xpath_phone
+                xpath_phone,
+                move=False
             ).text
         except TimeoutException:
             phone_number = self.get_element(
                 By.XPATH,
                 xpath_phone,
+                move=False,
                 timeout=20
             ).text
 
