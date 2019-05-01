@@ -884,7 +884,7 @@ class RenamerSelenium(BaseSelenium):
 
         # Grab current number
         current_phone = self.get_element(
-            By.XPATH, xpath_input, timeout=self.WAIT_BEFORE_INPUT
+            By.XPATH, xpath_input, move=False, timeout=self.WAIT_BEFORE_INPUT
         ).get_attribute('value')
 
         # Fill new number
@@ -990,12 +990,14 @@ class RenamerSelenium(BaseSelenium):
         gmaps = self.get_element(
             By.XPATH,
             '//*[@id="dcrd-8"]/div/ul/li[1]/a',
+            move=False,
         ).get_attribute('href')
 
         # Get GSearch link
         gsearch = self.get_element(
             By.XPATH,
             '//*[@id="dcrd-8"]/div/ul/li[2]/a',
+            move=False
         ).get_attribute('href')
 
         data = {'google_maps': gmaps, 'google_search': gsearch}
