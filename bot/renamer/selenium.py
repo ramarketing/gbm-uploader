@@ -286,7 +286,9 @@ class RenamerSelenium(BaseSelenium):
                 .perform()
 
         self.driver.switch_to.window(self.driver.window_handles[1])
-        text = self.get_element(By.XPATH, '//body', timeout=5).text.strip()
+        text = self.get_element(
+            By.XPATH, '//body', move=False, timeout=5
+        ).text.strip()
 
         if 'Is this your business' in text:
             elements = self.get_elements(
@@ -311,7 +313,7 @@ class RenamerSelenium(BaseSelenium):
             )
 
             text = self.get_element(
-                By.XPATH, '//body', timeout=5
+                By.XPATH, '//body', move=False, timeout=5
             ).text.strip()
 
         if (
@@ -738,7 +740,7 @@ class RenamerSelenium(BaseSelenium):
 
         self._wait(10)
 
-        text = self.get_element(By.XPATH, '//body').text
+        text = self.get_element(By.XPATH, '//body', move=False).text
         if "Couldn't connect" in text:
             raise InvalidValidationMethod
 
@@ -969,7 +971,8 @@ class RenamerSelenium(BaseSelenium):
         # Check if is "Pending" or "Suspended"
         text = self.get_element(
             By.XPATH,
-            '//body'
+            '//body',
+            move=False
         ).text
 
         if 'This location has been suspended due to quality issues.' in text:
