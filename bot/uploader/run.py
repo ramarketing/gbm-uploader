@@ -1,11 +1,10 @@
-# from uploader.selenium import UploaderSelenium
-# from uploader.service import BusinesService
+from uploader.selenium import UploaderSelenium
+from uploader.service import CredentialService
 
 
 def run(*args, **kwargs):
-    pass
-    #biz_service = BusinesService()
-    #object_list = biz_service.get_list()
+    credential_service = CredentialService()
+    object_list = credential_service.get_list()
 
-    # for obj in object_list:
-    # RenamerSelenium(entity=obj)
+    for obj in object_list:
+        UploaderSelenium(entity=obj)

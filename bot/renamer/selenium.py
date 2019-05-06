@@ -647,19 +647,20 @@ class RenamerSelenium(BaseSelenium):
         self.fill_input(By.XPATH, xpath_year, date_final.year)
 
         # Month
+        xpath_month = (
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div[1]/span[2]/span/div',
+        )
         self.click_element(
             By.XPATH,
-            (
-                '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
-                'div[1]/span[2]/span/div'
-            )
+            xpath_month
         )
         self.click_element(
             By.XPATH,
             (
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
                 'div[1]/span[2]/span/div/div[2]/div[{}]'
-            ).format(date_final.month + 2)
+            ).format(date_final.month + 2),
+            timeout=3
         )
 
         # Day
@@ -675,7 +676,8 @@ class RenamerSelenium(BaseSelenium):
             (
                 '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/'
                 'div[1]/span[3]/div/div[2]/div[{}]'
-            ).format(date_final.day + 2)
+            ).format(date_final.day + 2),
+            timeout=3
         )
 
         # Apply
