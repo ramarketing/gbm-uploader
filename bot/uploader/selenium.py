@@ -345,6 +345,7 @@ class UploaderSelenium(BaseSelenium):
             'Get your code at this number now by automated call' not in text
         ):
             self.logger(instance=obj, data="Cannot validate by phone.")
+            self.driver.close()
             return
 
         phone = self.get_element(
