@@ -991,13 +991,15 @@ class RenamerSelenium(BaseSelenium):
             By.XPATH,
             '//*[@id="dcrd-8"]/div/ul/li[1]/a',
             move=False,
+            raise_exception=False
         ).get_attribute('href')
 
         # Get GSearch link
         gsearch = self.get_element(
             By.XPATH,
             '//*[@id="dcrd-8"]/div/ul/li[2]/a',
-            move=False
+            move=False,
+            raise_exception=False
         ).get_attribute('href')
 
         data = {'google_maps': gmaps, 'google_search': gsearch}
