@@ -396,6 +396,7 @@ class UploaderSelenium(BaseSelenium):
                 address, city, state_zip_code, country = full_address \
                     .split(', ')
             except ValueError:
+                country = 'United States'
                 address, city, state_zip_code = full_address \
                     .split(', ')
 
