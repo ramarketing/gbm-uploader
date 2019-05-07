@@ -52,7 +52,6 @@ class UploaderSelenium(BaseSelenium):
         self.verify_rows()
         self.verify_tabs()
         self.report_success()
-        self._start_debug(message="Job has finished.")  # DEBUG
         self.quit_driver()
 
     def do_login(self):
