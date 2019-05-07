@@ -391,8 +391,12 @@ class UploaderSelenium(BaseSelenium):
             obj['recovery_email'] = self.entity.recovery_email
 
             full_address = obj.pop('address')
-            address, city, state_zip_code, country = full_address.split(', ')
-            state, zip_code = state_zip_code.split(' ')
+            try:
+                address, city, state_zip_code, country = full_address \
+                    .split(', ')
+                state, zip_code = state_zip_code.split(' ')
+            except ValueError:
+                self._start_debug(obj=obj, message="Error parsing address.")
 
             obj['final_address'] = address
             obj['final_city'] = city.title()
