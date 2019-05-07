@@ -409,3 +409,4 @@ class UploaderSelenium(BaseSelenium):
                 self.biz_service.create(**obj)
             except json.decoder.JSONDecodeError:
                 self._start_debug(obj=obj, message="Error creating business.")
+                continue
