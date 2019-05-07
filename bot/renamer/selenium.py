@@ -646,7 +646,8 @@ class RenamerSelenium(BaseSelenium):
 
         # Month
         xpath_month = (
-            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div[1]/span[2]/span/div',
+            '//*[@id="js"]/div[10]/div/div[2]/content/div/div[4]/div[1]/'
+            'span[2]/span/div',
         )
         self.click_element(
             By.XPATH,

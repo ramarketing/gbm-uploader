@@ -11,7 +11,7 @@ class BusinessList(BaseEntityList):
 
 
 class BusinessService(BaseService):
-    endpoint = '/mixer/business/'
+    endpoint = '/renamer/business/'
     entity = Business
     entity_list = BusinessList
 

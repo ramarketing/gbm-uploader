@@ -1,3 +1,4 @@
+import json
 import platform
 import traceback
 
@@ -6,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 import config
+from constants import COUNTRY_CHOICES
 from base.exceptions import (
     CaptchaError, CredentialInvalid, EmptyList, EntityInvalid,
     EntityIsSuccess, InvalidValidationMethod, NotFound, MaxRetries,
@@ -13,7 +15,8 @@ from base.exceptions import (
 )
 from base.selenium import BaseSelenium
 from captcha import HttpClient, AccessDeniedException
-from utils import save_image_from_url
+from uploader.service import BusinessService
+from utils import phone_clean, save_image_from_url
 
 
 class UploaderSelenium(BaseSelenium):
@@ -22,6 +25,7 @@ class UploaderSelenium(BaseSelenium):
     def __init__(self, entity, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity = entity
+        self.biz_service = BusinessService()
         try:
             self.handle()
         except TerminatedByUser:
@@ -43,10 +47,13 @@ class UploaderSelenium(BaseSelenium):
     def handle(self):
         self.driver = self.get_driver(size=(1200, 700))
         self.do_login()
-        self.wait_for_upload()
+        self.go_to_manager()
         self.do_pagination()
         self.verify_rows()
-        self._start_debug()  # DEBUG
+        self.verify_tabs()
+        self.report_success()
+        self._start_debug(message="Job has finished.")  # DEBUG
+        self.quit_driver()
 
     def do_login(self):
         self.driver.get('https://accounts.google.com/ServiceLogin')
@@ -173,6 +180,7 @@ class UploaderSelenium(BaseSelenium):
         url = 'https://business.google.com/locations'
         if not self.driver.current_url.startswith(url):
             self.driver.get(url)
+            self._wait(5)
 
     def get_rows(self, raise_exception=True):
         self.go_to_manager()
@@ -224,41 +232,8 @@ class UploaderSelenium(BaseSelenium):
         )
         self._wait(20)
 
-    def wait_for_upload(self):
-        rows = self.get_rows(raise_exception=False)
-        action_list = ['r', 'c', 'q']
-
-        if rows:
-            self.logger(instance=self.entity, data=(
-                "This credential has businesses inside.\n\n"
-            ))
-
-            action = None
-            while not action:
-                action = input(
-                    "(r) To remove them.\n"
-                    "(c) To continue.\n"
-                    "(q) To use the next credential.\n"
-                )
-                if action not in action_list:
-                    action = None
-                    print('Invalid action. Try again.\n')
-
-            if action == 'q':
-                raise TerminatedByUser
-            elif action == 'r':
-                self.do_delete_all()
-        else:
-            action = None
-            while action != "c":
-                action = input(
-                    (
-                        'Please upload the data. Press "c" after '
-                        'is displayed on your screen.'
-                    )
-                )
-
     def verify_rows(self):
+        self.object_list = []
         rows = self.get_rows()
         if not rows:
             return
@@ -272,15 +247,31 @@ class UploaderSelenium(BaseSelenium):
             'td',
             source=row
         )
-        column = columns[-1]
 
-        if column.text != 'Verify now':
+        empty, pk, name_address, status, action_column = columns
+        pk = pk.text
+        name, address = name_address.text.split('\n')
+        status = status.text
+        action = action_column.text
+
+        obj = {
+            'pk': pk,
+            'name': name,
+            'address': address,
+            'phone': None,
+            'status': status,
+            'action': action,
+            'row': row,
+            'window': None
+        }
+
+        if action != 'Verify now':
             return
 
         element = self.get_element(
             By.XPATH,
             'content/div/div',
-            source=column,
+            source=action_column,
             move=True
         )
 
@@ -302,29 +293,31 @@ class UploaderSelenium(BaseSelenium):
         after_length = len(self.driver.window_handles)
 
         if before_length != after_length:
-            self.active_list.append(
-                (row, self.driver.window_handles[1])
-            )
+            obj['window'] = self.driver.window_handles[-1]
+
+        self.object_list.append(obj)
 
     def verify_tabs(self):
-        index = 0
-        for tab in self.driver.window_handles:
-            index += 1
-
-            if index == 1:
+        for obj in self.object_list:
+            if not obj['window']:
                 continue
 
-            self.verify_tab(tab)
+            self.driver.switch_to.window(obj['window'])
+            self.verify_tab(obj)
 
-    def verify_tab(self, tab):
-        text = self.get_element(By.XPATH, '//body').text.strip()
+    def verify_tab(self, obj):
+        text = self.get_element(
+            By.TAG_NAME,
+            'body',
+            move=False
+        ).text.strip()
 
         if 'Is this your business' in text:
             elements = self.get_elements(
                 By.XPATH,
                 (
                     '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/'
-                    'div[1]/div/content/label[2]'
+                    'div[1]/div/content/label'
                 )
             )
             self.click_element(
@@ -340,18 +333,29 @@ class UploaderSelenium(BaseSelenium):
                     'div[2]/button'
                 )
             )
-
             text = self.get_element(
-                By.XPATH, '//body', timeout=5
+                By.XPATH,
+                '//body',
+                move=False,
+                timeout=5
             ).text.strip()
 
         if (
             'Enter the code' not in text and
             'Get your code at this number now by automated call' not in text
         ):
-            raise EntityInvalid(
-                "Cannot validate by phone.", logger=self.logger
-            )
+            self.logger(instance=obj, data="Cannot validate by phone.")
+            return
+
+        phone = self.get_element(
+            By.XPATH,
+            (
+                '//*[@id="main_viewpane"]/c-wiz[1]/div/div[2]/div/div/div/'
+                'div[1]/div/div[1]/h3',
+            ),
+            move=False
+        ).text
+        obj['phone'] = phone_clean(phone)
 
     def do_pagination(self):
         self.click_element(
@@ -370,7 +374,7 @@ class UploaderSelenium(BaseSelenium):
             ),
             move=True
         )
-        self.click_element(
+        success = self.click_element(
             By.XPATH,
             (
                 '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
@@ -379,7 +383,38 @@ class UploaderSelenium(BaseSelenium):
                 'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]',
                 '/html/body/div[4]/c-wiz[3]/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
                 'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]',
+                '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
+                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
             ),
-            timeout=3
+            timeout=3,
+            raise_exception=False
         )
-        self._wait(5)
+        if not success:
+            input('Please do the pagination manually then press any key.')
+        else:
+            self._wait(5)
+
+    def report_success(self):
+        for obj in self.object_list:
+            if not obj['phone']:
+                continue
+
+            obj['email'] = self.entity.email
+            obj['password'] = self.entity.password
+            obj['recovery_email'] = self.entity.recovery_email
+
+            full_address = obj.pop('address')
+            address, city, state_zip_code, country = full_address.split(', ')
+            state, zip_code = state_zip_code.split(' ')
+
+            obj['final_address'] = address
+            obj['final_city'] = city.title()
+            obj['final_state'] = state
+            obj['final_zip_code'] = zip_code
+            obj['final_country'] = COUNTRY_CHOICES[country]
+            obj['final_phone_number'] = obj['phone']
+
+            try:
+                self.biz_service.create(**obj)
+            except json.decoder.JSONDecodeError:
+                self._start_debug(obj=obj, message="Error creating business.")

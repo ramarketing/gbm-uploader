@@ -186,5 +186,7 @@ class BaseSelenium:
             time.sleep(1)
 
     def _start_debug(self, *args, **kwargs):
+        if 'message' in kwargs:
+            print(kwargs['message'])
         if config.PDB_DEBUG:
             pdb.set_trace()

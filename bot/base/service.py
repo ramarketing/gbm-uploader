@@ -132,6 +132,10 @@ class BaseService:
         r = self.request('post', 'account/login/', data=data, skip_token=True)
         self.token = r['token']
 
+    def create(self, **kwargs):
+        r = self.request('post', data=kwargs)
+        return self.entity(self, r)
+
     def get_headers(self):
         if self.token:
             return {
@@ -207,7 +211,7 @@ class BaseService:
             'data': log_kwargs
         })
         r = getattr(requests, method)(endpoint, **kwargs)
-        assert r.status_code == requests.codes.ok, (
+        assert r.status_code >= 200 and r.status_code < 300, (
             "%s: Request error: %s" % (self.__class__.__name__, r.json())
         )
         return r.json()
