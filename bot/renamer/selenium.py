@@ -29,15 +29,13 @@ class RenamerSelenium(BaseSelenium):
         self.entity = entity
         try:
             self.handle()
-        except (
-            CredentialInvalid, EntityInvalid, EmptyList, NotFound, MaxRetries,
-            InvalidValidationMethod
-        ):
+        except (CredentialInvalid, EntityInvalid, InvalidValidationMethod):
             self.entity.report_fail()
             self.quit_driver()
+        except (EmptyList, NotFound, MaxRetries):
+            self.quit_driver()
         except EntityIsSuccess:
-            # # Need to retrieve data before reporting succcess
-            # self.entity.report_success()
+            self.entity.report_success()
             self.quit_driver()
         except Exception as err:
             print(err)
