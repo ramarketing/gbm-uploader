@@ -362,14 +362,7 @@ class UploaderSelenium(BaseSelenium):
             By.XPATH,
             (
                 '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
-                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[1]/'
-                'div[1]/div[4]',
-                '//*[@id="yDmH0d"]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
-                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[1]/'
-                'div[1]/div[1]',
-                '//*[@id="yDmH0d"]/c-wiz[3]/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
-                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[1]/'
-                'div[1]/div[4]'
+                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]',
 
             ),
             move=True
@@ -377,14 +370,8 @@ class UploaderSelenium(BaseSelenium):
         success = self.click_element(
             By.XPATH,
             (
-                '/html/body/div[4]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
-                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]',
-                '/html/body/div[4]/c-wiz[2]/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
-                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]',
-                '/html/body/div[4]/c-wiz[3]/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
-                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]',
                 '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/'
-                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]'
+                'div/content/c-wiz[2]/div[4]/div/span[1]/div[2]/div[2]/div[4]',
             ),
             timeout=3,
             raise_exception=False
