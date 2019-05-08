@@ -8,10 +8,17 @@ from selenium.common.exceptions import (
     TimeoutException, WebDriverException
 )
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
+from base.exceptions import (
+    CaptchaError, CredentialInvalid, EntityInvalid
+)
+from captcha import HttpClient, AccessDeniedException
 import config
 from logger import Logger
+from utils import save_image_from_url
 
 
 class BaseSelenium:
@@ -21,8 +28,6 @@ class BaseSelenium:
     def get_driver(self, size=None):
         if hasattr(self, 'driver') and self.driver:
             return self.driver
-
-        # user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
 
         options = Options()
         options.add_argument('disable-infobars')
@@ -142,6 +147,132 @@ class BaseSelenium:
         source = source or self.driver
         element = source.find_element(by, selector)
         element.clear()
+
+    def do_login(self, credential=None):
+        credential = credential or self.entity
+
+        self.driver.get('https://accounts.google.com/ServiceLogin')
+        self.fill_input(
+            By.ID,
+            'identifierId',
+            credential.email + Keys.RETURN
+        )
+        self.fill_input(
+            By.NAME,
+            'password',
+            credential.password + Keys.RETURN,
+            timeout=3
+        )
+
+        self._wait(3)
+        success = self.driver.current_url.startswith(
+            'https://myaccount.google'
+        )
+        if success:
+            return
+
+        captcha_client = HttpClient(
+            config.CAPTCHA_USERNAME, config.CAPTCHA_PASSWORD
+        )
+        captcha_element = self.get_element(
+            By.ID,
+            'captchaimg',
+            timeout=3,
+            raise_exception=False
+        )
+        captcha_solution = None
+
+        while captcha_element and captcha_element.get_attribute('src'):
+            if captcha_solution:
+                captcha_client.report(captcha_solution["captcha"])
+
+            url = captcha_element.get_attribute('src')
+            image_path = save_image_from_url(url, 'captcha.jpg')
+
+            try:
+                captcha_client.get_balance()
+                captcha_solution = captcha_client.decode(image_path)
+                if captcha_solution:
+                    self.logger(
+                        instance=captcha_client,
+                        data="CAPTCHA %s solved: %s" % (
+                            captcha_solution["captcha"],
+                            captcha_solution["text"]
+                        )
+                    )
+
+                    if '':
+                        captcha_client.report(captcha_solution["captcha"])
+                    else:
+                        self.fill_input(
+                            By.NAME,
+                            'password',
+                            credential.password
+                        )
+                        self.fill_input(
+                            By.CSS_SELECTOR,
+                            'input[type="text"]',
+                            captcha_solution["text"] + Keys.RETURN
+                        )
+                        captcha_element = self.get_element(
+                            By.ID,
+                            'captchaimg',
+                            timeout=5,
+                            raise_exception=False
+                        )
+            except AccessDeniedException:
+                raise CaptchaError(
+                    data=(
+                        'Access to DBC API denied, check '
+                        'your credentials and/or balance'
+                    ),
+                    logger=self.logger
+                )
+
+        element = self.get_element(
+            By.CSS_SELECTOR,
+            'input[type="password"]',
+            raise_exception=False
+        )
+        if element:
+            credential.report_fail()
+            raise CredentialInvalid("Wrong password.")
+
+        success = self.click_element(
+            By.CSS_SELECTOR,
+            'div[data-challengetype="12"]',
+            raise_exception=False,
+            timeout=3
+        )
+        if success:
+            self.fill_input(
+                By.NAME,
+                'knowledgePreregisteredEmailResponse',
+                self.entity.recovery_email + Keys.RETURN,
+                timeout=3
+            )
+
+        phone = self.get_text(
+            By.ID,
+            'deviceAddress',
+            timeout=3,
+            raise_exception=False
+        )
+        if phone:
+            credential.report_fail()
+            raise EntityInvalid(
+                msg="Phone number is required", logger=self.logger
+            )
+
+        self._wait(3)
+        success = self.driver.current_url.startswith(
+            'https://myaccount.google'
+        )
+        if not success:
+            credential.report_fail()
+            raise CredentialInvalid(
+                msg="Login failed", logger=self.logger
+            )
 
     @perform_action
     def fill_input(self, by, selector, content, source=None, *args, **kwargs):

@@ -28,6 +28,12 @@ class BaseEntity:
     def pk(self):
         return self.id
 
+    def put(self, **kwargs):
+        if self.credential:
+            return False
+        self.update(**kwargs)
+        return self.service.request('put', pk=self.pk, data=kwargs)
+
     def report_fail(self):
         if self.date_fail:
             return False
@@ -143,6 +149,9 @@ class BaseService:
             }
         return {}
 
+    def get_allowed_methods(self):
+        return self.allowed_methods
+
     def get_list(self, **kwargs):
         r = self.request('get', params=kwargs)
         return self.entity_list(self, r)
@@ -157,10 +166,10 @@ class BaseService:
 
     def is_valid_method(self, method, raise_exeception=True):
         if raise_exeception:
-            assert method in self.allowed_methods, (
+            assert method in self.get_allowed_methods(), (
                 "%s: Method not allowed" % self.__class__.__name__
             )
-        return method in self.allowed_methods
+        return method in self.get_allowed_methods()
 
     def prepare_endpoint(self, endpoint=None, pk=None, extra=None):
         url = config.API_ROOT
@@ -214,4 +223,6 @@ class BaseService:
         assert r.status_code >= 200 and r.status_code < 300, (
             "%s: Request error: %s" % (self.__class__.__name__, r.json())
         )
-        return r.json()
+        response = r.json()
+        logging(instance=self.__class__, data=response)
+        return response

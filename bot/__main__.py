@@ -1,5 +1,6 @@
 import sys
 
+from flow.run import run as flow_bot
 from uploader.run import run as uploader_bot
 from renamer.run import run as renamer_bot
 
@@ -7,7 +8,9 @@ from renamer.run import run as renamer_bot
 if __name__ == '__main__':
     bot = sys.argv[1]
 
-    if bot == 'renamer':
+    if bot == 'flow':
+        run = flow_bot
+    elif bot == 'renamer':
         run = renamer_bot
     elif bot == 'uploader':
         run = uploader_bot

@@ -9,15 +9,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 
-import config
 import constants
 from base.exceptions import (
-    CaptchaError, CredentialInvalid, EmptyList, EntityInvalid,
+    CredentialInvalid, EmptyList, EntityInvalid,
     EntityIsSuccess, InvalidValidationMethod, NotFound, MaxRetries
 )
 from base.selenium import BaseSelenium
-from captcha import HttpClient, AccessDeniedException
-from utils import save_image_from_url
 
 
 class RenamerSelenium(BaseSelenium):
@@ -113,127 +110,6 @@ class RenamerSelenium(BaseSelenium):
             raise NotFound(msg="Business not found.", logger=self.logger)
 
         return row
-
-    def do_login(self):
-        self.driver.get('https://accounts.google.com/ServiceLogin')
-        self.fill_input(
-            By.ID,
-            'identifierId',
-            self.entity.email + Keys.RETURN
-        )
-        self.fill_input(
-            By.NAME,
-            'password',
-            self.entity.password + Keys.RETURN,
-            timeout=3
-        )
-
-        self._wait(3)
-        success = self.driver.current_url.startswith(
-            'https://myaccount.google'
-        )
-        if success:
-            return
-
-        captcha_client = HttpClient(
-            config.CAPTCHA_USERNAME, config.CAPTCHA_PASSWORD
-        )
-        captcha_element = self.get_element(
-            By.ID,
-            'captchaimg',
-            timeout=3,
-            raise_exception=False
-        )
-        captcha_solution = None
-
-        while captcha_element and captcha_element.get_attribute('src'):
-            if captcha_solution:
-                captcha_client.report(captcha_solution["captcha"])
-
-            url = captcha_element.get_attribute('src')
-            image_path = save_image_from_url(url, 'captcha.jpg')
-
-            try:
-                captcha_client.get_balance()
-                captcha_solution = captcha_client.decode(image_path)
-                if captcha_solution:
-                    self.logger(
-                        instance=captcha_client,
-                        data="CAPTCHA %s solved: %s" % (
-                            captcha_solution["captcha"],
-                            captcha_solution["text"]
-                        )
-                    )
-
-                    if '':
-                        captcha_client.report(captcha_solution["captcha"])
-                    else:
-                        self.fill_input(
-                            By.NAME,
-                            'password',
-                            self.entity.password
-                        )
-                        self.fill_input(
-                            By.CSS_SELECTOR,
-                            'input[type="text"]',
-                            captcha_solution["text"] + Keys.RETURN
-                        )
-                        captcha_element = self.get_element(
-                            By.ID,
-                            'captchaimg',
-                            timeout=5,
-                            raise_exception=False
-                        )
-            except AccessDeniedException:
-                raise CaptchaError(
-                    data=(
-                        'Access to DBC API denied, check '
-                        'your credentials and/or balance'
-                    ),
-                    logger=self.logger
-                )
-
-        element = self.get_element(
-            By.CSS_SELECTOR,
-            'input[type="password"]',
-            raise_exception=False
-        )
-        if element:
-            raise CredentialInvalid("Wrong password.")
-
-        success = self.click_element(
-            By.CSS_SELECTOR,
-            'div[data-challengetype="12"]',
-            raise_exception=False,
-            timeout=3
-        )
-        if success:
-            self.fill_input(
-                By.NAME,
-                'knowledgePreregisteredEmailResponse',
-                self.entity.recovery_email + Keys.RETURN,
-                timeout=3
-            )
-
-        phone = self.get_text(
-            By.ID,
-            'deviceAddress',
-            timeout=3,
-            raise_exception=False
-        )
-        if phone:
-            raise EntityInvalid(
-                msg="Phone number is required", logger=self.logger
-            )
-
-        self._wait(3)
-        success = self.driver.current_url.startswith(
-            'https://myaccount.google'
-        )
-        if not success:
-            raise CredentialInvalid(
-                msg="Login failed", logger=self.logger
-            )
 
     def do_open_verification_tab(self):
         row = self.get_business_row()
