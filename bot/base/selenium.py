@@ -64,6 +64,7 @@ class BaseSelenium:
         return driver
 
     def quit_driver(self):
+        self.driver.switch_to.window(self.driver.window_handles[0])
         self.logger(data="Closing at {}.".format(self.driver.current_url))
         self.driver.quit()
 
