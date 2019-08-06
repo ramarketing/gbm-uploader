@@ -41,6 +41,9 @@ setup(
         'requests',
         'selenium'
     ],
+    entry_points={
+        'console_scripts': ['bot=bot:main'],
+    },
     license="Apache License 2.0",
     zip_safe=False,
     keywords="bot",
