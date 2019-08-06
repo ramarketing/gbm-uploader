@@ -1,6 +1,7 @@
 import sys
 
 from flow.run import run as flow_bot
+from maps.run import run as maps_bot
 from uploader.run import run as uploader_bot
 from renamer.run import run as renamer_bot
 
@@ -14,6 +15,8 @@ if __name__ == '__main__':
         run = renamer_bot
     elif bot == 'uploader':
         run = uploader_bot
+    elif bot == 'maps':
+        run = maps_bot
     else:
         raise NotImplementedError(
             "Invalid bot. \"%s\" doesn't exists." % bot
