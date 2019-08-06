@@ -27,18 +27,11 @@ env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Create your `.env` file, change it and save it.
-```shell
-copy .env.save .env
-notepad .env
-```
-
-5. Type the information provided, save and close.
 
 ## Running the script
 
 ```shell
 cd ~/Sites/gbm-uploader  # Recommended path
 env\Scripts\activate
-python bot renamer
+python bot maps
 ```
