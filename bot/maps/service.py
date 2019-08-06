@@ -21,7 +21,7 @@ class MapService(BaseService):
         folder = os.getcwd()
         for name in os.listdir(folder):
             if (
-                os.path.isfile(os.path.join(folder, name)) or
+                not os.path.isfile(os.path.join(folder, name)) or
                 not name.endswith('.csv')
             ):
                 continue
