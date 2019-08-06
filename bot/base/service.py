@@ -116,17 +116,6 @@ class BaseService:
     }
     token = None
 
-    def __init__(self):
-        assert config.API_ROOT, (
-            self.errors['api_root'] % self.__class__.__name__
-        )
-        assert config.API_USERNAME, (
-            self.errors['credentials'] % self.__class__.__name__
-        )
-        assert config.API_PASSWORD, (
-            self.errors['credentials'] % self.__class__.__name__
-        )
-
     def authenticate(self):
         assert not self.token, (
             "%s: A token was found." % self.__class__.__name__
