@@ -4,7 +4,7 @@ This Python script allows you to upload CSV files with business to Google Busine
 
 ## Requirements
 * Windows
-* [GIT for Windows](https://git-scm.com/download/win) - Make sure to select: Add to system `$PATH` at the end of the installation.
+* [GIT for Windows](https://github.com/git-for-windows/git/releases/latest) - Make sure to select: Add to system `$PATH` at the end of the installation.
 * [Python 3.7.0](https://www.python.org/downloads/release/python-374/) - Make sure to select: Add to system `$PATH`.
 
 ## Installing the script
