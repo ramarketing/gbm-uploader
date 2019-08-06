@@ -6,15 +6,15 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-from constants import COUNTRY_CHOICES
-from base.exceptions import (
+from ..constants import COUNTRY_CHOICES
+from ..base.exceptions import (
     CredentialInvalid, EmptyList, EntityInvalid,
     EntityIsSuccess, InvalidValidationMethod, NotFound, MaxRetries,
     TerminatedByUser
 )
-from base.selenium import BaseSelenium
-from uploader.service import BusinessService
-from utils import phone_clean
+from ..base.selenium import BaseSelenium
+from ..utils import phone_clean
+from .service import BusinessService
 
 
 class UploaderSelenium(BaseSelenium):

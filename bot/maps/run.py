@@ -1,10 +1,10 @@
 import csv
 import os
 
-from config import BASE_DIR
+from ..config import BASE_DIR
 
-from maps.selenium import MapsSelenium
-from maps.service import MapService
+from .selenium import MapsSelenium
+from .service import MapService
 
 
 def run(*args, **kwargs):

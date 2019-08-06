@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from base.service import BaseEntity, BaseEntityList, BaseService
+from ..base.service import BaseEntity, BaseEntityList, BaseService
 
 
 class Business(BaseEntity):

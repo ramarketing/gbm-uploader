@@ -1,5 +1,5 @@
-from flow.selenium import FlowSelenium
-from flow.service import BusinessService, CredentialService
+from .selenium import FlowSelenium
+from .service import BusinessService, CredentialService
 
 
 def run(*args, **kwargs):

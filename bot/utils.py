@@ -1,7 +1,7 @@
 import os
 import requests
 
-import config
+from . import config
 
 
 def phone_clean(value):

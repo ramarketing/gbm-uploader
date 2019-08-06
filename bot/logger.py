@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 
-import config
+from . import config
 
 
 class Logger:

@@ -1,5 +1,5 @@
-from uploader.selenium import UploaderSelenium
-from uploader.service import CredentialService
+from .selenium import UploaderSelenium
+from .service import CredentialService
 
 
 def run(*args, **kwargs):

@@ -1,8 +1,8 @@
 import csv
 import os
 
-from config import BASE_DIR
-from base.service import BaseEntity, BaseEntityList, BaseService
+from ..config import BASE_DIR
+from ..base.service import BaseEntity, BaseEntityList, BaseService
 
 
 class Map(BaseEntity):

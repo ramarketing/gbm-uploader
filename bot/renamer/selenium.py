@@ -9,12 +9,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 
-import constants
-from base.exceptions import (
+from .. import constants
+from ..base.exceptions import (
     CredentialInvalid, EmptyList, EntityInvalid,
     EntityIsSuccess, InvalidValidationMethod, NotFound, MaxRetries
 )
-from base.selenium import BaseSelenium
+from ..base.selenium import BaseSelenium
 
 
 class RenamerSelenium(BaseSelenium):
