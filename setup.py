@@ -42,7 +42,7 @@ setup(
         'selenium'
     ],
     entry_points={
-        'console_scripts': ['bot=bot:main'],
+        'console_scripts': ['bot=bot.command_line:main'],
     },
     license="Apache License 2.0",
     zip_safe=False,
