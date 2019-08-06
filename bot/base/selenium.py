@@ -12,13 +12,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
-from base.exceptions import (
+from ..base.exceptions import (
     CaptchaError, CredentialInvalid, EntityInvalid
 )
-from captcha import HttpClient, AccessDeniedException
-import config
-from logger import Logger
-from utils import save_image_from_url
+from ..captcha import HttpClient, AccessDeniedException
+from .. import config
+from ..logger import Logger
+from ..utils import save_image_from_url
 
 
 class BaseSelenium:
