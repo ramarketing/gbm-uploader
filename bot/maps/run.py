@@ -25,13 +25,37 @@ def run(*args, **kwargs):
             MapsSelenium(entity=obj)
 
         with open(file_name, 'w') as file:
-            obj = object_list[0]
-
-            fieldnames = [h for h in obj.raw_data.keys()]
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer = csv.DictWriter(file, fieldnames=[
+                'Location',
+                'Name',
+                'Business',
+                'Description',
+                'Directions',
+                'Related Searches'
+            ])
             writer.writeheader()
 
             for obj in object_list:
-                writer.writerow(obj.raw_data)
+                data = dict(
+                    location=obj.location,
+                    name='{main_keyword} {city} - {name}'.format(
+                        main_keyword=obj.main_keyword,
+                        city=obj.location_city,
+                        name=obj.name
+                    ),
+                    business=(
+                        '{name}\n{address}\n{phone}\n{url}\n{cid_url}'
+                    ).format(
+                        name=obj.name,
+                        address=obj.address,
+                        phone=obj.phone,
+                        url=obj.url,
+                        cid_url=obj.cid_url
+                    ),
+                    description=obj.description,
+                    directions=obj.directions,
+                    related_searches=obj.related_keywords
+                )
+                writer.writerow(data)
 
         file.close()
