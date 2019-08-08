@@ -48,7 +48,7 @@ def run(*args, **kwargs):
                     ).format(
                         name=obj.name,
                         address=obj.address,
-                        phone=obj.phone,
+                        phone=obj.phone_number,
                         url=obj.url,
                         cid_url=obj.cid_url
                     ),
