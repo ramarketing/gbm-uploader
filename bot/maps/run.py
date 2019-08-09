@@ -26,12 +26,12 @@ def run(*args, **kwargs):
 
         with open(file_name, 'w') as file:
             writer = csv.DictWriter(file, fieldnames=[
-                'Location',
-                'Name',
-                'Business',
-                'Description',
-                'Directions',
-                'Related Searches'
+                'location',
+                'name',
+                'business',
+                'description',
+                'directions',
+                'related_searches'
             ])
             writer.writeheader()
 
