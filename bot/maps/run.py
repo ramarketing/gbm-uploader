@@ -25,14 +25,11 @@ def getListOfFiles(dirName):
 
 def run(*args, **kwargs):
     folder = os.getcwd()
-    for name in getListOfFiles(folder):
-        if (
-            not os.path.isfile(os.path.join(folder, name)) or
-            not name.endswith('.csv')
-        ):
+    for file_name in getListOfFiles(folder):
+        if not os.path.isfile(file_name) or not file_name.endswith('.csv'):
             continue
 
-        file_name = os.path.join(folder, name)
+        print('Working with', file_name)
         maps_service = MapService()
         object_list = maps_service.get_list(file=file_name)
 
