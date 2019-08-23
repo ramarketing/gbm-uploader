@@ -17,8 +17,8 @@ def getListOfFiles(dirName):
         # If entry is a directory then get the list of files in this directory
         if os.path.isdir(fullPath):
             allFiles = allFiles + getListOfFiles(fullPath)
-    else:
-        allFiles.append(fullPath)
+        else:
+            allFiles.append(fullPath)
 
     return allFiles
 
