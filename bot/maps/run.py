@@ -31,7 +31,11 @@ def run(*args, **kwargs):
 
         print('Working with', file_name)
         maps_service = MapService()
-        object_list = maps_service.get_list(file=file_name)
+        try:
+            object_list = maps_service.get_list(file=file_name)
+        except UnicodeDecodeError:
+            print('Unable to work with', file_name)
+            continue
 
         if not object_list:
             continue
