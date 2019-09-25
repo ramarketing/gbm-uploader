@@ -21,7 +21,7 @@ class BaseEntity:
     def __getattr__(self, name):
         try:
             return self.raw_data[name]
-        except IndexError:
+        except (KeyError, IndexError):
             return self.__getattribute__(name)
 
     @property
