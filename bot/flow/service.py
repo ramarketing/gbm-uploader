@@ -1,47 +1,43 @@
 from ..base.service import BaseEntity, BaseEntityList, BaseService
 
 
-class Business(BaseEntity):
+class GMB(BaseEntity):
     def __str__(self):
         return self.name
 
 
-class BusinessList(BaseEntityList):
-    entity = Business
+class GMBList(BaseEntityList):
+    entity = GMB
 
 
-class BusinessService(BaseService):
-    endpoint = '/renamer/business/'
-    entity = Business
-    entity_list = BusinessList
+class GMBService(BaseService):
+    endpoint = '/panel/seo/gmbs/'
+    entity = GMB
+    entity_list = GMBList
 
     def get_allowed_methods(self):
         return ('get', 'post', 'put')
 
     def get_list(self, **kwargs):
-        kwargs['is_fail'] = 3
-        kwargs['is_pending'] = 3
-        kwargs['is_success'] = 3
-        kwargs['to_rename'] = 3
-        kwargs['has_credential'] = 3
+        kwargs['has_api_id'] = 3
         return super().get_list(**kwargs)
 
 
-class Credential(BaseEntity):
+class Account(BaseEntity):
     def __str__(self):
-        return self.name
+        return self.username
 
 
-class CredentialList(BaseEntityList):
-    entity = Credential
+class AccountList(BaseEntityList):
+    entity = Account
 
 
-class CredentialService(BaseService):
-    endpoint = '/renamer/credentials/'
-    entity = Credential
-    entity_list = CredentialList
+class AccountService(BaseService):
+    endpoint = '/panel/seo/accounts/'
+    entity = Account
+    entity_list = AccountList
 
     def get_list(self, **kwargs):
-        kwargs['is_fail'] = 3
-        kwargs['is_success'] = 3
+        kwargs['provider'] = 'google'
+        kwargs['is_active'] = 2
         return super().get_list(**kwargs)
