@@ -10,4 +10,4 @@ def run(*args, **kwargs):
         gmb_list = gmb_service.get_list(limit=3)
 
         for gmb in gmb_list:
-            FlowSelenium(entity=gmb, account=account)
+            FlowSelenium(gmb, account)
