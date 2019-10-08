@@ -38,6 +38,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'phonenumbers',
+        'python-dotenv',
         'requests',
         'selenium'
     ],
