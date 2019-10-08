@@ -1,3 +1,5 @@
 openpyxl
+python-dotenv
+phonenumbers
 requests
 selenium

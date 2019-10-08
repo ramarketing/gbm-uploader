@@ -28,11 +28,16 @@ class BaseEntity:
     def pk(self):
         return self.id
 
+    def patch(self, **kwargs):
+        self.update(**kwargs)
+        return self.service.request('patch', pk=self.pk, data=kwargs)
+
     def put(self, **kwargs):
-        if self.credential:
-            return False
         self.update(**kwargs)
         return self.service.request('put', pk=self.pk, data=kwargs)
+
+    def refresh(self):
+        return self.service.get_detail(self.pk)
 
     def report_fail(self):
         if self.date_fail:

@@ -1,19 +1,23 @@
 import traceback
 
+import phonenumbers
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 
 from ..base.selenium import BaseSelenium
+from ..config import STATUS_APPROVED, STATUS_DENY
 
 
 class FlowSelenium(BaseSelenium):
     DEFAULT_CATEGORY = 'Insulation contractor'
     WAIT_BEFORE_NEXT = 5
 
-    def __init__(self, entity, credential,  *args, **kwargs):
+    def __init__(self, entity, credential, code, lead,  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entity = entity
+        self.code = code
         self.credential = credential
+        self.lead = lead
+
         try:
             self.handle()
         except Exception as err:
@@ -23,12 +27,34 @@ class FlowSelenium(BaseSelenium):
         self.quit_driver()
 
     def handle(self):
-        self.driver = self.get_driver(size=(1200, 700))
+        self.driver = self.get_driver(size=(1200, 900))
         self.do_login(credential=self.credential)
         self.go_to_listing()
         self.go_to_created_business()
-        self.do_name('test cleaning service')
-        self.do_phone('(818) 297-6038')
+
+        name = self.get_name()
+        name = '{} {}'.format(
+            self.code.person['first_name'],
+            ' '.join(name.split(' ')[1:])
+        )
+        self.do_name(name)
+        self.do_phone(self.code.person['phone'])
+        self.open_verification_tab()
+
+        while not self.has_number_verification():
+            self.driver.get(self.driver.current_url)
+
+        self.request_code()
+
+        self.driver.switch_to_window(self.driver.window_handles[0])
+        self.do_name(self.entity.name)
+        self.do_category(self.entity.verification_category)
+        self.do_phone(self.entity.phone)
+
+        while not any([self.code.code_1, self.code.code_2, self.code.code_3]):
+            self.code = self.code.refresh()
+
+        self.write_code()
 
         import pdb
         pdb.set_trace()
@@ -57,11 +83,24 @@ class FlowSelenium(BaseSelenium):
             self.driver.get(url)
 
     def go_to_created_business(self):
-        xpath = '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/span/c-wiz[2]/div[2]/table/tbody/tr[1]'
+        xpath = (
+            '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/'
+            'span/c-wiz[2]/div[2]/table/tbody/tr[1]'
+        )
         row = self.get_element(By.XPATH, xpath)
         self.click_element(By.XPATH, '//td[2]/span/a', source=row)
         url = self.driver.current_url.replace('/dashboard/', '/edit/')
         self.driver.get(url)
+
+    def get_name(self):
+        content = self.get_text(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
+                'div[2]/span/div[2]'
+            )
+        )
+        return content.strip()
 
     def do_name(self, name):
         self.click_element(
@@ -69,8 +108,7 @@ class FlowSelenium(BaseSelenium):
             (
                 '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
                 'div[2]/span/div[2]',
-            ),
-            timeout=5
+            )
         )
 
         xpath_input = (
@@ -85,18 +123,25 @@ class FlowSelenium(BaseSelenium):
             (
                 '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
                 'span[2]/div',
-            ),
+            )
         )
 
-    def do_phone(self, phone_number):
+    def do_phone(self, phone):
+        try:
+            pn = phonenumbers.parse(phone)
+            phone = phonenumbers.format_number(
+                pn, phonenumbers.PhoneNumberFormat.NATIONAL
+            )
+        except phonenumbers.phonenumberutil.NumberParseException:
+            pass
+
         self.click_element(
             By.XPATH,
             (
                 '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
                 'div[2]/span/div[8]'
             ),
-            move=True,
-            timeout=self.WAIT_BEFORE_NEXT
+            move=True
         )
 
         xpath_input = (
@@ -109,7 +154,7 @@ class FlowSelenium(BaseSelenium):
         self.fill_input(
             By.XPATH,
             xpath_input,
-            phone_number
+            phone
         )
 
         self.click_element(
@@ -119,6 +164,196 @@ class FlowSelenium(BaseSelenium):
                 'span[2]/div'
             )
         )
+
+    def open_verification_tab(self):
+        url = self.driver.current_url.replace('/edit/', '/verify/')
+        self.driver.execute_script(
+            '''window.open("{}", "_blank");'''.format(url)
+        )
+        self.driver.switch_to_window(self.driver.window_handles[1])
+        self.driver.get(url)
+
+    def has_number_verification(self):
+        content = self.get_text(By.TAG_NAME, 'body')
+
+        if 'Is this your business?' in content:
+            elements = self.get_elements(
+                By.XPATH,
+                (
+                    '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
+                    'div[1]/div/span/label'
+                )
+            )
+            elements[-1].click()
+            self.click_element(
+                By.XPATH,
+                (
+                    '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
+                    'div[2]/button'
+                )
+            )
+            content = self.get_text(By.TAG_NAME, 'body', timeout=3)
+
+        return 'Postcard by mail' not in content or 'Enter the code' in content
+
+    def request_code(self):
+        content = self.get_text(By.TAG_NAME, 'body')
+
+        if 'Enter code' in content:
+            return
+
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/div/'
+                'div[1]/div/div[2]/button[2]'
+            )
+        )
+
+    def do_category(self, name):
+        if not name:
+            return
+
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
+                'div[2]/span/div[3]'
+            )
+        )
+
+        xpath_input = (
+            '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/div/'
+            'div[1]/div/div[1]/div[1]/input[2]'
+        )
+
+        self.clear_input(
+            By.XPATH,
+            xpath_input
+        )
+        self.fill_input(
+            By.XPATH,
+            xpath_input,
+            name
+        )
+
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/div'
+                '/div[1]/div/div[1]/div[2]/div/div/div[1]'
+            ),
+            timeout=3
+        )
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
+                'span[2]/div'
+            )
+        )
+
+    def do_hours(self, all_day=True):
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
+                'div[2]/span/div[6]'
+            ),
+            move=True
+        )
+        elements = self.get_elements(
+            By.XPATH,
+            '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[3]/div/div'
+        )
+        for element in elements:
+            checkbox = self.get_element(
+                By.XPATH,
+                'label/div',
+                source=element
+            )
+            if checkbox.get_attribute('aria-checked') != 'true':
+                checkbox.click()
+
+            self.click_element(
+                By.XPATH,
+                'div[2]/div[1]/div/div[1]/div[1]/input[2]',
+                source=element
+            )
+
+            if all_day:
+                self.click_element(
+                    By.XPATH,
+                    'div[2]/div[1]/div/div[1]/div[2]/div/div/div[1]',
+                    raise_exception=False,
+                    source=element
+                )
+            else:
+                self.click_element(
+                    By.XPATH,
+                    'div[2]/div[1]/div/div[1]/div[2]/div/div/div[21]',
+                    move=True,
+                    raise_exception=False,
+                    source=element
+                )
+                self.click_element(
+                    By.XPATH,
+                    'div[2]/div[1]/div/div[2]/div[2]/div[1]/input[2]',
+                    raise_exception=False,
+                    source=element
+                )
+                self.click_element(
+                    By.XPATH,
+                    'div[2]/div[1]/div/div[2]/div[2]/div[2]/div/div/div[39]',
+                    move=True,
+                    raise_exception=False,
+                    source=element
+                )
+            self._wait(1)
+
+        self.click_element(
+            By.XPATH,
+            '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/'
+            'span[2]/div'
+        )
+
+    def write_code(self):
+        self.driver.switch_to_window(self.driver.window_handles[1])
+
+        codes = [self.code.code_1, self.code.code_2, self.code.code_3]
+        codes = [code for code in codes if code]
+        code_valid = False
+
+        while not code_valid:
+            for code in codes:
+                if code_valid:
+                    continue
+
+                self.fill_input(
+                    By.XPATH,
+                    (
+                        '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
+                        'div[1]/div[2]/div[1]/div/div[1]/input'
+                    ),
+                    code
+                )
+                self.click_element(
+                    By.XPATH,
+                    (
+                        '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
+                        'div[1]/div[3]/button'
+                    )
+                )
+                self._wait(3)
+                content = self.get_text(By.TAG_NAME, 'body')
+
+                if (
+                    'Enter the code' not in content and
+                    'Wrong code' not in content
+                ):
+                    code_valid = True
+
+        self.lead.patch(status=STATUS_APPROVED if code_valid else STATUS_DENY)
 
     '''
     def do_name(self):
@@ -275,6 +510,7 @@ class FlowSelenium(BaseSelenium):
         )
         self.click_element(By.XPATH, xpath_next, timeout=3)
 
+    '''
     def do_category(self):
         xpath_input = (
             '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
@@ -294,6 +530,7 @@ class FlowSelenium(BaseSelenium):
             'div[1]',
         )
         self.click_element(By.XPATH, xpath_next, timeout=3)
+    '''
 
     '''
     def do_phone(self):
