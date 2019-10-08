@@ -26,8 +26,14 @@ def run_thread_list(*args, **kwargs):
 
     code = code[0]
     lead = lead_service.get_detail(pk=code.person['id'])
-    lead.patch(status=STATUS_PROCESSING)
     gmb_list = gmb_service.get_list(limit=5)
+
+    if gmb_list.count == 0:
+        print('There are no business available. Waiting 10 seconds.')
+        sleep(10)
+        return
+
+    lead.patch(status=STATUS_PROCESSING)
     thread_list = []
 
     for gmb in gmb_list:
