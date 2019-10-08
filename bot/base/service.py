@@ -160,7 +160,7 @@ class BaseService:
 
     def is_valid_method(self, method, raise_exeception=True):
         if raise_exeception:
-            assert method in self.get_allowed_methods(), (
+            assert method.lower() in self.get_allowed_methods(), (
                 "%s: Method not allowed" % self.__class__.__name__
             )
         return method in self.get_allowed_methods()
