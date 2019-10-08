@@ -22,3 +22,17 @@ bot maps
 
 bot flow
 ```
+
+
+## Dotenv example
+This isn't for all use cases, like `bot flow`.
+
+```
+API_ROOT="https://api.endpoint.io/api"
+API_USERNAME="username"
+API_PASSWORD="password"
+
+STATUS_PROCESSING=1
+STATUS_APPROVED=2
+STATUS_DENY=3
+```
