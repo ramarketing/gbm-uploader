@@ -19,4 +19,6 @@ Make sure that you are inside the folder that contains the propper files.
 
 ```shell
 bot maps
+
+bot flow
 ```
