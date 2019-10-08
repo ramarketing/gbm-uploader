@@ -159,11 +159,7 @@ class BaseService:
         return parse_qs(url.query)
 
     def is_valid_method(self, method, raise_exeception=True):
-        if raise_exeception:
-            assert method.lower() in self.get_allowed_methods(), (
-                "%s: Method not allowed" % self.__class__.__name__
-            )
-        return method in self.get_allowed_methods()
+        return True
 
     def prepare_endpoint(self, endpoint=None, pk=None, extra=None):
         url = config.API_ROOT
