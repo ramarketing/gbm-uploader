@@ -25,7 +25,7 @@ bot flow
 
 
 ## Dotenv example
-This isn't for all use cases, like `bot flow`.
+This isn't for all use cases, like `bot flow`, you will need to create a `.env` under the folder that you will run the bot.
 
 ```
 API_ROOT="https://api.endpoint.io/api"
