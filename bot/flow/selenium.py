@@ -25,29 +25,131 @@ class FlowSelenium(BaseSelenium):
     def handle(self):
         self.driver = self.get_driver(size=(1200, 700))
         self.do_login(credential=self.credential)
-        self.go_to_creation()
-        self.do_name()
-        self.do_search_engine()
-        self.do_address()
+        self.go_to_listing()
+        self.go_to_created_business()
+        self.do_name('test cleaning service')
+        self.do_phone('(818) 297-6038')
+
+        import pdb
+        pdb.set_trace()
+
+        '''
+        self.go_to_creation()  # 7/10 Updated
+        self.do_name()  # 7/10 Updated
+        self.do_can_visit()  # 7/10 Updated
+        self.do_address()  # 7/10 Updated
         self.do_outside()
         self.do_area()
         self.do_category()
         self.do_phone()
         self.do_finish()
         self.do_verify_tab()
+        '''
 
     def go_to_creation(self):
         url = 'https://business.google.com/create'
         if not self.driver.current_url.startswith(url):
             self.driver.get(url)
 
+    def go_to_listing(self):
+        url = 'https://business.google.com/locations'
+        if not self.driver.current_url.startswith(url):
+            self.driver.get(url)
+
+    def go_to_created_business(self):
+        xpath = '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/c-wiz[3]/div/span/c-wiz[2]/div[2]/table/tbody/tr[1]'
+        row = self.get_element(By.XPATH, xpath)
+        self.click_element(By.XPATH, '//td[2]/span/a', source=row)
+        url = self.driver.current_url.replace('/dashboard/', '/edit/')
+        self.driver.get(url)
+
+    def do_name(self, name):
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
+                'div[2]/span/div[2]',
+            ),
+            timeout=5
+        )
+
+        xpath_input = (
+            '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/div/'
+            'div[1]/div/div[1]/input'
+        )
+
+        self.clear_input(By.XPATH, xpath_input)
+        self.fill_input(By.XPATH, xpath_input, name)
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
+                'span[2]/div',
+            ),
+        )
+
+    def do_phone(self, phone_number):
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
+                'div[2]/span/div[8]'
+            ),
+            move=True,
+            timeout=self.WAIT_BEFORE_NEXT
+        )
+
+        xpath_input = (
+            '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[3]/div[1]/'
+            'div/div/div[2]/div[1]/div/div[1]/input'
+        )
+
+        # Fill new number
+        self.clear_input(By.XPATH, xpath_input)
+        self.fill_input(
+            By.XPATH,
+            xpath_input,
+            phone_number
+        )
+
+        self.click_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/'
+                'span[2]/div'
+            )
+        )
+
+    '''
     def do_name(self):
         xpath_input = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div/div/div/div[1]/div[2]/div[1]/div/div[1]/input',
+            'input[aria-label="Type your business name"]',
         )
-        self.clear_input(By.XPATH, xpath_input)
-        self.fill_input(By.XPATH, xpath_input, self.entity.name + Keys.RETURN)
+        self.clear_input(By.CSS_SELECTOR, xpath_input)
+        self.fill_input(
+            By.CSS_SELECTOR,
+            xpath_input,
+            self.entity.name + Keys.RETURN
+        )
+
+        xpath = (
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[2]/div/'
+            'div/div[2]/div/div/div[1]'
+        )
+        self.click_element(By.XPATH, xpath, raise_exception=False)
+
+        xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
+        self.click_element(By.XPATH, xpath)
+    '''
+
+    def do_can_visit(self):
+        xpath = (
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div'
+        )
+        self.click_element(By.XPATH, xpath)
+
+        xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
+        self.click_element(By.XPATH, xpath)
 
     def do_search_engine(self):
         xpath_inputs = (
@@ -72,91 +174,61 @@ class FlowSelenium(BaseSelenium):
 
     def do_address(self):
         # Country
-        xpath_country = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div[1]/div/div/c-wiz/c-wiz/div/div/div[1]/div[1]',
-        )
         self.click_element(
-            By.XPATH, xpath_country, timeout=self.WAIT_BEFORE_NEXT
+            By.CSS_SELECTOR, 'div[aria-label="Country / Region"]'
         )
         xpath_country_options = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div[1]/div/div/c-wiz/c-wiz/div/div/div[1]/div[1]/'
-            'div[2]/div',
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div/'
+            'div[1]/div/div/c-wiz/c-wiz/div/div/div[1]/div[1]/div[2]/div',
         )
-        country_options = self.get_elements(
-            By.XPATH, xpath_country_options, timeout=3
-        )
+        country_options = self.get_elements(By.XPATH, xpath_country_options)
         for option in country_options:
             code = option.get_attribute('data-value')
-            if code.upper() != self.entity.final_country.upper():
+            if code.upper() != self.entity.country['code'].upper():
                 continue
             option.click()
 
+        self._wait(3)
+
         # Street
-        xpath_street = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div[1]/div/div/c-wiz/c-wiz/div/div/div[4]/div/div[1]/'
-            'div/div[1]/input',
+        xpath = (
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div/'
+            'div[1]/div/div/c-wiz/c-wiz/div/div/div[4]/div/div[1]/div/'
+            'div[1]/input'
         )
-        self.clear_input(
-            By.XPATH, xpath_street, timeout=self.WAIT_BEFORE_NEXT
-        )
-        self.fill_input(
-            By.XPATH, xpath_street, self.entity.final_address
-        )
+        self.fill_input(By.XPATH, xpath, self.entity.address)
 
         # City
-        xpath_city = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div[1]/div/div/c-wiz/c-wiz/div/div/div[5]/div/div[1]/'
-            'div/div[1]/input',
-        )
-        self.clear_input(
-            By.XPATH, xpath_city, timeout=self.WAIT_BEFORE_NEXT
-        )
         self.fill_input(
-            By.XPATH, xpath_city, self.entity.final_city
+            By.CSS_SELECTOR,
+            'input[aria-label="City"]',
+            self.entity.city
         )
 
         # State
-        xpath_state = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div[1]/div/div/c-wiz/c-wiz/div/div/div[6]/div[1]',
-        )
-        self.click_element(
-            By.XPATH, xpath_state, timeout=self.WAIT_BEFORE_NEXT
-        )
+        self.click_element(By.CSS_SELECTOR, 'div[aria-label="State"]')
         xpath_state_options = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div[1]/div/div/c-wiz/c-wiz/div/div/div[6]/div[1]/'
-            'div[2]/div',
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div/'
+            'div[1]/div/div/c-wiz/c-wiz/div/div/div[6]/div[1]/div[2]/div',
         )
         state_options = self.get_elements(
             By.XPATH, xpath_state_options, timeout=3
         )
         for option in state_options:
             code = option.get_attribute('data-value')
-            if code.upper() != self.entity.final_state.upper():
+            if code.upper() != self.entity.state.upper():
                 continue
             option.click()
 
         # ZIP
-        xpath_zip_code = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
-            'div/div/div[1]/div/div/c-wiz/c-wiz/div/div/div[7]/div/div[1]/'
-            'div/div[1]/input',
-        )
-        self.clear_input(
-            By.XPATH, xpath_zip_code, timeout=self.WAIT_BEFORE_NEXT
-        )
         self.fill_input(
-            By.XPATH, xpath_zip_code, self.entity.final_zip_code
+            By.CSS_SELECTOR,
+            'input[aria-label="ZIP code"]',
+            self.entity.zip_code.split('-')[0]
         )
 
         xpath_next = (
-            '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[3]/'
-            'div[1]',
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]',
         )
         self.click_element(By.XPATH, xpath_next, timeout=3)
 
@@ -223,6 +295,7 @@ class FlowSelenium(BaseSelenium):
         )
         self.click_element(By.XPATH, xpath_next, timeout=3)
 
+    '''
     def do_phone(self):
         xpath_phone = (
             '//*[@id="yDmH0d"]/c-wiz/div[2]/div/c-wiz/div/div[2]/div[2]/'
@@ -244,6 +317,7 @@ class FlowSelenium(BaseSelenium):
             'div[1]',
         )
         self.click_element(By.XPATH, xpath_next)
+    '''
 
     def do_finish(self):
         xpath_button = (

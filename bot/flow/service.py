@@ -38,6 +38,7 @@ class AccountService(BaseService):
     entity_list = AccountList
 
     def get_list(self, **kwargs):
-        kwargs['provider'] = 'google'
         kwargs['is_active'] = 2
+        kwargs['has_password'] = 2
+        kwargs['provider'] = 'google'
         return super().get_list(**kwargs)

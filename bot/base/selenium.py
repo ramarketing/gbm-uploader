@@ -155,12 +155,12 @@ class BaseSelenium:
         self.driver.get('https://accounts.google.com/ServiceLogin')
         self.fill_input(
             By.ID,
-            'identifierId',
-            credential.email + Keys.RETURN
+            ('identifierId', 'Email'),
+            credential.username + Keys.RETURN
         )
         self.fill_input(
             By.NAME,
-            'password',
+            ('password', 'Passwd'),
             credential.password + Keys.RETURN,
             timeout=3
         )
@@ -289,7 +289,7 @@ class BaseSelenium:
 
     @perform_action
     def get_element(
-        self, by, selector, source=None, move=True, *args, **kwargs
+        self, by, selector, source=None, move=False, *args, **kwargs
     ):
         source = source or self.driver
         element = source.find_element(by, selector)
