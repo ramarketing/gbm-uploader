@@ -1,6 +1,7 @@
 import traceback
 
 import phonenumbers
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
 from ..base.selenium import BaseSelenium
@@ -55,9 +56,6 @@ class FlowSelenium(BaseSelenium):
             self.code = self.code.refresh()
 
         self.write_code()
-
-        import pdb
-        pdb.set_trace()
 
         '''
         self.go_to_creation()  # 7/10 Updated
@@ -237,21 +235,30 @@ class FlowSelenium(BaseSelenium):
             name
         )
 
-        self.click_element(
-            By.XPATH,
-            (
-                '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/div'
-                '/div[1]/div/div[1]/div[2]/div/div/div[1]'
-            ),
-            timeout=3
-        )
-        self.click_element(
-            By.XPATH,
-            (
-                '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
-                'span[2]/div'
+        try:
+            self.click_element(
+                By.XPATH,
+                (
+                    '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/'
+                    'div/div[1]/div/div[1]/div[2]/div/div/div[1]'
+                ),
+                timeout=3
             )
-        )
+            self.click_element(
+                By.XPATH,
+                (
+                    '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
+                    'span[2]/div'
+                )
+            )
+        except TimeoutException:
+            self.click_element(
+                By.XPATH,
+                (
+                    '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
+                    'span[1]/div'
+                )
+            )
 
     def do_hours(self, all_day=True):
         self.click_element(

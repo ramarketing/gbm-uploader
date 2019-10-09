@@ -61,6 +61,9 @@ class GMBService(BaseService):
         kwargs['has_api_id'] = 3
         return super().get_list(**kwargs)
 
+    def subscribe(self):
+        self.request('post', pk=self.pk, extra='subscribe')
+
 
 class Lead(BaseEntity):
     def __str__(self):

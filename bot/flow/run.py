@@ -26,7 +26,7 @@ def run_thread_list(*args, **kwargs):
 
     code = code[0]
     lead = lead_service.get_detail(pk=code.person['id'])
-    gmb_list = gmb_service.get_list(limit=5)
+    gmb_list = gmb_service.get_list(is_created=3, limit=5)
 
     if gmb_list.count == 0:
         print('There are no business available. Waiting 10 seconds.')
@@ -34,15 +34,17 @@ def run_thread_list(*args, **kwargs):
         return
 
     lead.patch(status=STATUS_PROCESSING)
+    code.subscribe()
     thread_list = []
 
     for gmb in gmb_list:
-        if not gmb.account:
+        if not gmb.account or gmb.is_created:
             continue
 
         def run_window():
             account = account_service.get_detail(gmb.account)
             FlowSelenium(gmb, account, code, lead)
+            gmb.patch(is_created=True)
 
         thread = Thread(target=run_window)
         thread.start()
@@ -55,7 +57,7 @@ def run(*args, **kwargs):
     thread_list = []
 
     while True:
-        if any([thread.is_active() for thread in thread_list]):
+        if any([thread.is_active() for thread in thread_list if thread and hasattr(thread, 'is_active')]):
             print(
                 'Another thread is running in the background. '
                 'Waiting 10 seconds.'
