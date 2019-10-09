@@ -57,7 +57,11 @@ def run(*args, **kwargs):
     thread_list = []
 
     while True:
-        if any([thread.is_active() for thread in thread_list if thread and hasattr(thread, 'is_active')]):
+        if any([
+            thread.is_active()
+            for thread in thread_list
+            if thread and hasattr(thread, 'is_active')]
+        ):
             print(
                 'Another thread is running in the background. '
                 'Waiting 10 seconds.'
