@@ -26,6 +26,9 @@ class Code(BaseEntity):
     def __str__(self):
         return self.person
 
+    def subscribe(self):
+        self.service.request('post', pk=self.pk, extra='subscribe')
+
 
 class CodeList(BaseEntityList):
     entity = Code
@@ -60,9 +63,6 @@ class GMBService(BaseService):
     def get_list(self, **kwargs):
         kwargs['has_api_id'] = 3
         return super().get_list(**kwargs)
-
-    def subscribe(self):
-        self.request('post', pk=self.pk, extra='subscribe')
 
 
 class Lead(BaseEntity):

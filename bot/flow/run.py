@@ -14,7 +14,8 @@ def run_thread_list(*args, **kwargs):
     code_kwargs = {
         'limit': 1,
         'has_code': 3,
-        'status': 'null'
+        'status': 'null',
+        'user': 'null'
     }
 
     code = code_service.get_list(**code_kwargs)
