@@ -74,9 +74,11 @@ class BaseSelenium:
             success = False
 
             try:
-                max_retries = int(kwargs.get('max_retries', 5))
+                max_retries = int(
+                    kwargs.get('max_retries', config.MAX_RETRIES)
+                )
             except ValueError:
-                max_retries = 5
+                max_retries = config.MAX_RETRIES
 
             try:
                 timeout = int(kwargs.get('timeout', 0))
@@ -149,9 +151,7 @@ class BaseSelenium:
         element = source.find_element(by, selector)
         element.clear()
 
-    def do_login(self, credential=None):
-        credential = credential or self.entity
-
+    def do_login(self, credential):
         self.driver.get('https://accounts.google.com/ServiceLogin')
         self.fill_input(
             By.ID,
@@ -249,7 +249,7 @@ class BaseSelenium:
             self.fill_input(
                 By.NAME,
                 'knowledgePreregisteredEmailResponse',
-                self.entity.recovery_email + Keys.RETURN,
+                self.account.recovery_email + Keys.RETURN,
                 timeout=3
             )
 
@@ -314,7 +314,8 @@ class BaseSelenium:
 
     def _wait(self, seconds):
         for second in range(seconds):
-            print('Wait: {:d}/{:d}'.format(second + 1, seconds))
+            if config.DEBUG:
+                print('Wait: {:d}/{:d}'.format(second + 1, seconds))
             time.sleep(1)
 
     def _start_debug(self, *args, **kwargs):

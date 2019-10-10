@@ -3,7 +3,8 @@ from threading import Thread
 
 from .selenium import FlowSelenium
 from .service import AccountService, CodeService, GMBService, LeadService
-from ..config import STATUS_PROCESSING
+from ..base.exceptions import GBMException
+from ..config import STATUS_APPROVED, STATUS_DENY
 
 
 def run_thread_list(*args, **kwargs):
@@ -34,7 +35,6 @@ def run_thread_list(*args, **kwargs):
         sleep(10)
         return
 
-    lead.patch(status=STATUS_PROCESSING)
     code.subscribe()
     thread_list = []
 
@@ -42,12 +42,20 @@ def run_thread_list(*args, **kwargs):
         if not gmb.account or gmb.is_created:
             continue
 
-        def run_window():
-            account = account_service.get_detail(gmb.account)
-            FlowSelenium(gmb, account, code, lead)
-            gmb.patch(is_created=True)
+        def run_window(entity, code, lead):
+            account = account_service.get_detail(entity.account)
+            instance = FlowSelenium(entity, account, code, lead)
+            is_success = True
+            try:
+                instance.handle()
+            except GBMException:
+                is_success = False
 
-        thread = Thread(target=run_window)
+            instance.quit_driver()
+            entity.patch(is_created=True)
+            lead.patch(status=STATUS_APPROVED if is_success else STATUS_DENY)
+
+        thread = Thread(target=run_window, args=(gmb, code, lead))
         thread.start()
         thread_list.append(thread)
 

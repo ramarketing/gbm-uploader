@@ -1,11 +1,10 @@
-import traceback
-
 import phonenumbers
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
 from ..base.selenium import BaseSelenium
-from ..config import STATUS_APPROVED, STATUS_DENY
+from ..base.exceptions import GBMException
+from ..config import STATUS_PROCESSING
 
 
 class FlowSelenium(BaseSelenium):
@@ -18,14 +17,6 @@ class FlowSelenium(BaseSelenium):
         self.code = code
         self.credential = credential
         self.lead = lead
-
-        try:
-            self.handle()
-        except Exception as err:
-            print(err)
-            print(traceback.format_exc())
-            self._start_debug()
-        self.quit_driver()
 
     def handle(self):
         self.driver = self.get_driver(size=(1200, 900))
@@ -41,9 +32,13 @@ class FlowSelenium(BaseSelenium):
         self.do_name(name)
         self.do_phone(self.code.person['phone'])
         self.open_verification_tab()
+        retries = 0
 
         while not self.has_number_verification():
+            if retries == 20:
+                raise GBMException("Too many retries.")
             self.driver.get(self.driver.current_url)
+            retries += 1
 
         self.request_code()
 
@@ -121,7 +116,8 @@ class FlowSelenium(BaseSelenium):
             (
                 '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
                 'span[2]/div',
-            )
+            ),
+            timeout=3
         )
 
     def do_phone(self, phone):
@@ -207,6 +203,7 @@ class FlowSelenium(BaseSelenium):
                 'div[1]/div/div[2]/button[2]'
             )
         )
+        self.lead.patch(status=STATUS_PROCESSING)
 
     def do_category(self, name):
         if not name:
@@ -360,7 +357,8 @@ class FlowSelenium(BaseSelenium):
                 ):
                     code_valid = True
 
-        self.lead.patch(status=STATUS_APPROVED if code_valid else STATUS_DENY)
+        if not code_valid:
+            raise GBMException("Didn't required a code.")
 
     '''
     def do_name(self):
