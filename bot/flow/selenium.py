@@ -122,6 +122,8 @@ class FlowSelenium(BaseSelenium):
             (
                 '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[5]/'
                 'span[2]/div',
+                '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/c-wiz/section/'
+                'div[5]/span[2]/div'
             ),
             timeout=3
         )
