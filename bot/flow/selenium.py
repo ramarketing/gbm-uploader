@@ -104,13 +104,15 @@ class FlowSelenium(BaseSelenium):
             By.XPATH,
             (
                 '//*[@id="yDmH0d"]/c-wiz/div[2]/div[1]/c-wiz/div/div[2]/'
-                'div[2]/span/div[2]',
+                'div[2]/span/div[2]'
             )
         )
 
         xpath_input = (
             '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/section/div[4]/div/'
-            'div[1]/div/div[1]/input'
+            'div[1]/div/div[1]/input',
+            '//*[@id="yDmH0d"]/div[4]/div/div[2]/span/c-wiz/section/'
+            'div[4]/div/div[1]/div/div[1]/input',
         )
 
         self.clear_input(By.XPATH, xpath_input)
