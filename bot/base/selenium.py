@@ -173,7 +173,7 @@ class BaseSelenium:
         element = self.get_element(
             By.CSS_SELECTOR,
             'input[type="password"]',
-            max_retries=5,
+            max_retries=2,
             raise_exception=False
         )
         if element:
@@ -184,7 +184,7 @@ class BaseSelenium:
             By.CSS_SELECTOR,
             'div[data-challengetype="12"]',
             raise_exception=False,
-            max_retries=5,
+            max_retries=2,
             timeout=3
         )
         if by_recovery_email:
@@ -199,7 +199,7 @@ class BaseSelenium:
             By.CSS_SELECTOR,
             'div[data-challengetype="13"]',
             raise_exception=False,
-            max_retries=5,
+            max_retries=2,
             timeout=3
         )
         if by_recovery_phone:
