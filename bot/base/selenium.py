@@ -13,7 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
 from ..base.exceptions import (
-    CaptchaError, CredentialInvalid, EntityInvalid
+    CaptchaError, CredentialInvalid
 )
 from ..captcha import HttpClient, AccessDeniedException
 from .. import config
@@ -239,13 +239,13 @@ class BaseSelenium:
             credential.report_fail()
             raise CredentialInvalid("Wrong password.")
 
-        success = self.click_element(
+        by_recovery_email = self.click_element(
             By.CSS_SELECTOR,
             'div[data-challengetype="12"]',
             raise_exception=False,
             timeout=3
         )
-        if success:
+        if by_recovery_email:
             self.fill_input(
                 By.NAME,
                 'knowledgePreregisteredEmailResponse',
@@ -253,16 +253,18 @@ class BaseSelenium:
                 timeout=3
             )
 
-        phone = self.get_text(
-            By.ID,
-            'deviceAddress',
-            timeout=3,
-            raise_exception=False
+        by_recovery_phone = success = self.click_element(
+            By.CSS_SELECTOR,
+            'div[data-challengetype="13"]',
+            raise_exception=False,
+            timeout=3
         )
-        if phone:
-            credential.report_fail()
-            raise EntityInvalid(
-                msg="Phone number is required", logger=self.logger
+        if by_recovery_phone:
+            self.fill_input(
+                By.ID,
+                'phoneNumberId',
+                self.account.recovery_phone + Keys.RETURN,
+                timeout=3
             )
 
         self._wait(3)
@@ -270,7 +272,6 @@ class BaseSelenium:
             'https://myaccount.google'
         )
         if not success:
-            credential.report_fail()
             raise CredentialInvalid(
                 msg="Login failed", logger=self.logger
             )

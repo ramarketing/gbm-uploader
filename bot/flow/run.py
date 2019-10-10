@@ -1,8 +1,6 @@
 from time import sleep
 from threading import Thread
 
-from selenium.common.exceptions import TimeoutException
-
 from .selenium import FlowSelenium
 from .service import AccountService, CodeService, GMBService, LeadService
 from ..base.exceptions import GBMException
