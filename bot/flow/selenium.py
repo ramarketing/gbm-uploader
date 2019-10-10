@@ -202,6 +202,13 @@ class FlowSelenium(BaseSelenium):
         content = self.get_text(By.TAG_NAME, 'body')
 
         if 'Enter code' in content:
+            self.click_element(
+                By.XPATH,
+                (
+                    '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
+                    'div[2]/div/div[2]/button'
+                )
+            )
             return
 
         self.click_element(
