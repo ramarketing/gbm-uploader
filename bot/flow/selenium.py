@@ -46,9 +46,14 @@ class FlowSelenium(BaseSelenium):
         self.do_name(self.entity.name)
         self.do_category(self.entity.verification_category)
         self.do_phone(self.entity.phone)
+        retries = 0
 
         while not any([self.code.code_1, self.code.code_2, self.code.code_3]):
+            if retries == 200:
+                self.lead.patch(status=31)
+                return
             self.code = self.code.refresh()
+            retries += 1
 
         self.write_code()
 
