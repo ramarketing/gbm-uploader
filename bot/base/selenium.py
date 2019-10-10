@@ -243,6 +243,7 @@ class BaseSelenium:
             By.CSS_SELECTOR,
             'div[data-challengetype="12"]',
             raise_exception=False,
+            max_retries=5,
             timeout=3
         )
         if by_recovery_email:
@@ -257,6 +258,7 @@ class BaseSelenium:
             By.CSS_SELECTOR,
             'div[data-challengetype="13"]',
             raise_exception=False,
+            max_retries=5,
             timeout=3
         )
         if by_recovery_phone:
