@@ -43,13 +43,13 @@ class FlowSelenium(BaseSelenium):
         self.request_code()
 
         self.driver.switch_to_window(self.driver.window_handles[0])
-        self.do_name(self.entity.name)
-        self.do_category(self.entity.verification_category)
-        self.do_phone(self.entity.phone)
 
         while not any([self.code.code_1, self.code.code_2, self.code.code_3]):
             self.code = self.code.refresh()
 
+        self.do_name(self.entity.name)
+        self.do_category(self.entity.verification_category)
+        self.do_phone(self.entity.phone)
         self.write_code()
 
         '''
