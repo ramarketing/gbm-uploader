@@ -204,7 +204,7 @@ class FlowSelenium(BaseSelenium):
                 )
             )
 
-        return 'Postcard by mail' not in content or
+        return 'Postcard by mail' not in content
 
     def request_code(self):
         content = self.get_text(By.TAG_NAME, 'body')
