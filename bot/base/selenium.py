@@ -249,11 +249,11 @@ class BaseSelenium:
             self.fill_input(
                 By.NAME,
                 'knowledgePreregisteredEmailResponse',
-                self.account.recovery_email + Keys.RETURN,
+                credential.recovery_email + Keys.RETURN,
                 timeout=3
             )
 
-        by_recovery_phone = success = self.click_element(
+        by_recovery_phone = self.click_element(
             By.CSS_SELECTOR,
             'div[data-challengetype="13"]',
             raise_exception=False,
@@ -263,7 +263,7 @@ class BaseSelenium:
             self.fill_input(
                 By.ID,
                 'phoneNumberId',
-                self.account.recovery_phone + Keys.RETURN,
+                credential.recovery_phone + Keys.RETURN,
                 timeout=3
             )
 
