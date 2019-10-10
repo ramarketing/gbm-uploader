@@ -195,13 +195,7 @@ class FlowSelenium(BaseSelenium):
                 )
             )
             content = self.get_text(By.TAG_NAME, 'body', timeout=3)
-
-        return 'Postcard by mail' not in content or 'Enter the code' in content
-
-    def request_code(self):
-        content = self.get_text(By.TAG_NAME, 'body')
-
-        if 'Enter code' in content:
+        elif 'Enter the code' in content:
             self.click_element(
                 By.XPATH,
                 (
@@ -209,6 +203,14 @@ class FlowSelenium(BaseSelenium):
                     'div[2]/div/div[2]/button'
                 )
             )
+
+        return 'Postcard by mail' not in content or
+
+    def request_code(self):
+        content = self.get_text(By.TAG_NAME, 'body')
+
+        if 'Enter code' in content:
+
             return
 
         self.click_element(
