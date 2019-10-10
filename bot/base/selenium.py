@@ -172,67 +172,10 @@ class BaseSelenium:
         if success:
             return
 
-        captcha_client = HttpClient(
-            config.CAPTCHA_USERNAME, config.CAPTCHA_PASSWORD
-        )
-        captcha_element = self.get_element(
-            By.ID,
-            'captchaimg',
-            timeout=3,
-            raise_exception=False
-        )
-        captcha_solution = None
-
-        while captcha_element and captcha_element.get_attribute('src'):
-            if captcha_solution:
-                captcha_client.report(captcha_solution["captcha"])
-
-            url = captcha_element.get_attribute('src')
-            image_path = save_image_from_url(url, 'captcha.jpg')
-
-            try:
-                captcha_client.get_balance()
-                captcha_solution = captcha_client.decode(image_path)
-                if captcha_solution:
-                    self.logger(
-                        instance=captcha_client,
-                        data="CAPTCHA %s solved: %s" % (
-                            captcha_solution["captcha"],
-                            captcha_solution["text"]
-                        )
-                    )
-
-                    if '':
-                        captcha_client.report(captcha_solution["captcha"])
-                    else:
-                        self.fill_input(
-                            By.NAME,
-                            'password',
-                            credential.password
-                        )
-                        self.fill_input(
-                            By.CSS_SELECTOR,
-                            'input[type="text"]',
-                            captcha_solution["text"] + Keys.RETURN
-                        )
-                        captcha_element = self.get_element(
-                            By.ID,
-                            'captchaimg',
-                            timeout=5,
-                            raise_exception=False
-                        )
-            except AccessDeniedException:
-                raise CaptchaError(
-                    data=(
-                        'Access to DBC API denied, check '
-                        'your credentials and/or balance'
-                    ),
-                    logger=self.logger
-                )
-
         element = self.get_element(
             By.CSS_SELECTOR,
             'input[type="password"]',
+            max_retries=5,
             raise_exception=False
         )
         if element:
