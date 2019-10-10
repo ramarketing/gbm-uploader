@@ -1,6 +1,8 @@
 from time import sleep
 from threading import Thread
 
+from selenium.common.exceptions import TimeoutException
+
 from .selenium import FlowSelenium
 from .service import AccountService, CodeService, GMBService, LeadService
 from ..base.exceptions import GBMException
@@ -45,15 +47,14 @@ def run_thread_list(*args, **kwargs):
         def run_window(entity, code, lead):
             account = account_service.get_detail(entity.account)
             instance = FlowSelenium(entity, account, code, lead)
-            is_success = True
             try:
                 instance.handle()
+                entity.patch(is_created=True)
+                lead.patch(status=STATUS_APPROVED)
             except GBMException:
-                is_success = False
+                lead.patch(status=STATUS_DENY)
 
             instance.quit_driver()
-            entity.patch(is_created=True)
-            lead.patch(status=STATUS_APPROVED if is_success else STATUS_DENY)
 
         thread = Thread(target=run_window, args=(gmb, code, lead))
         thread.start()
