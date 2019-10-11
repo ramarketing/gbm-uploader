@@ -205,7 +205,6 @@ class FlowSelenium(BaseSelenium):
         content = self.get_text(By.TAG_NAME, 'body')
 
         if 'Enter code' in content:
-
             return
 
         self.click_element(
@@ -345,12 +344,15 @@ class FlowSelenium(BaseSelenium):
                 if code_valid:
                     continue
 
+                input_xpath = (
+                    '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
+                    'div[1]/div[2]/div[1]/div/div[1]/input'
+                )
+
+                self.clear_input(By.XPATH, input_xpath)
                 self.fill_input(
                     By.XPATH,
-                    (
-                        '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
-                        'div[1]/div[2]/div[1]/div/div[1]/input'
-                    ),
+                    input_xpath,
                     code
                 )
                 self.click_element(
