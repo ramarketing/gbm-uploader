@@ -24,6 +24,9 @@ class BaseEntity:
         except (KeyError, IndexError):
             return self.__getattribute__(name)
 
+    def delete(self):
+        return self.service.request('delete', pk=self.pk)
+
     @property
     def pk(self):
         return self.id

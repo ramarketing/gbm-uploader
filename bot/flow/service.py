@@ -58,7 +58,7 @@ class GMBService(BaseService):
     entity_list = GMBList
 
     def get_allowed_methods(self):
-        return ('get', 'post', 'put')
+        return ('delete', 'get', 'post', 'put')
 
     def get_list(self, **kwargs):
         kwargs['has_api_id'] = 3

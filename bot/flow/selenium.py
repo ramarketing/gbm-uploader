@@ -3,7 +3,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
 from ..base.selenium import BaseSelenium
-from ..base.exceptions import GBMException
+from ..base.exceptions import CredentialInvalid, GBMException
 from ..config import STATUS_PROCESSING
 
 
@@ -196,13 +196,8 @@ class FlowSelenium(BaseSelenium):
             )
             content = self.get_text(By.TAG_NAME, 'body', timeout=3)
         elif 'Enter the code' in content:
-            self.click_element(
-                By.XPATH,
-                (
-                    '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/'
-                    'div[2]/div/div[2]/button'
-                )
-            )
+            self.entity.delete()
+            raise CredentialInvalid
 
         return 'Postcard by mail' not in content
 
