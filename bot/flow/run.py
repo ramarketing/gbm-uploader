@@ -3,7 +3,7 @@ from threading import Thread
 
 from .selenium import FlowSelenium
 from .service import AccountService, CodeService, GMBService, LeadService
-from ..base.exceptions import GBMException
+from ..base.exceptions import CredentialInvalid, GBMException
 from ..config import INSTANCES, STATUS_APPROVED, STATUS_DENY
 
 
@@ -28,7 +28,9 @@ def run_thread_list(*args, **kwargs):
 
     code = code[0]
     lead = lead_service.get_detail(pk=code.person['id'])
-    gmb_list = gmb_service.get_list(is_created=3, limit=INSTANCES)
+    gmb_list = gmb_service.get_list(
+        is_created=3, limit=INSTANCES, account__is_active=2
+    )
 
     if gmb_list.count == 0:
         print('There are no business available. Waiting 10 seconds.')
@@ -51,6 +53,8 @@ def run_thread_list(*args, **kwargs):
                 lead.patch(status=STATUS_APPROVED)
             except GBMException:
                 lead.patch(status=STATUS_DENY)
+            except CredentialInvalid:
+                account.path(is_active=False)
 
             instance.quit_driver()
 
