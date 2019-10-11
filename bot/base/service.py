@@ -1,3 +1,5 @@
+import json
+
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 
@@ -216,6 +218,9 @@ class BaseService:
         assert r.status_code >= 200 and r.status_code < 300, (
             "%s: Request error: %s" % (self.__class__.__name__, r.json())
         )
-        response = r.json()
+        try:
+            response = r.json()
+        except json.decoder.JSONDecodeError:
+            response = r.content
         logging(instance=self.__class__, data=response)
         return response
