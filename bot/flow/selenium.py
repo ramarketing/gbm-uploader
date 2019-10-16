@@ -239,7 +239,7 @@ class FlowSelenium(BaseSelenium):
             raise_exception=False,
             max_retries=3
         )
-        return True if button else False
+        return False if button else True
 
     def request_code(self):
         content = self.get_text(By.TAG_NAME, 'body')
