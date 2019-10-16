@@ -150,7 +150,7 @@ class BaseSelenium:
         element.clear()
 
     def do_login(self, credential):
-        self.driver.get('https://accounts.google.com/ServiceLogin')
+        self.driver.get('https://business.google.com/locations')
         self.fill_input(
             By.ID,
             ('identifierId', 'Email'),
@@ -165,7 +165,7 @@ class BaseSelenium:
 
         self._wait(3)
         success = self.driver.current_url.startswith(
-            'https://myaccount.google'
+            'https://business.google'
         )
         if success:
             return
@@ -212,7 +212,7 @@ class BaseSelenium:
 
         self._wait(3)
         success = self.driver.current_url.startswith(
-            'https://myaccount.google'
+            'https://business.google'
         )
         if not success:
             raise CredentialInvalid(
