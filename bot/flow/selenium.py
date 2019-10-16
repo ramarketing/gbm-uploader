@@ -29,17 +29,32 @@ class FlowSelenium(BaseSelenium):
             self.code.person['first_name'],
             ' '.join(name.split(' ')[1:])
         )
-        names = [
-            'company '
+        name_list = [
+            '{} carpet cleaning',
+            '{} mechanic shop',
+            '{} barber shop'
         ]
+
         self.do_name(name)
         self.do_phone(self.code.person['phone'])
         self.open_verification_tab()
         retries = 0
+        cur_index = 0
 
         while not self.has_number_verification():
-            if retries == 20:
+            if retries == 15:
                 raise GBMException("Too many retries.")
+
+            if retries % 5 == 0:
+                self.driver.switch_to_window(self.driver.window_handles[0])
+                temp_name = name_list[cur_index].format(
+                    self.code.person['first_name'],
+                    ' '.join(name.split(' ')[1:])
+                )
+                self.do_name(temp_name)
+                self.driver.switch_to_window(self.driver.window_handles[1])
+                cur_index += 1
+
             self.driver.get(self.driver.current_url)
             retries += 1
 
