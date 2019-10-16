@@ -81,11 +81,14 @@ class FlowSelenium(BaseSelenium):
             'span/c-wiz[2]/div[2]/table/tbody/tr[1]'
         )
         row = self.get_element(By.XPATH, xpath)
-        try:
-            self.click_element(By.XPATH, '//td[2]/span/a', source=row)
-        except TimeoutException:
-            self.click_element(By.XPATH, '//td[3]/span/a', source=row)
-
+        self.click_element(
+            By.XPATH,
+            (
+                '//td[2]/span/a',
+                '//td[3]/span/a'
+            ),
+            source=row
+        )
         url = self.driver.current_url.replace('/dashboard/', '/edit/')
         self.driver.get(url)
 
