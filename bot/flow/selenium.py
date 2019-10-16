@@ -72,7 +72,17 @@ class FlowSelenium(BaseSelenium):
 
     def go_to_listing(self):
         url = 'https://business.google.com/locations'
-        if not self.driver.current_url.startswith(url):
+
+        while not self.driver.current_url.startswith(url):
+            content = self.get_text(By.TAG_NAME, 'body')
+            if 'Choose an account' in content:
+                self.click_element(
+                    By.XPATH,
+                    (
+                        '//*[@id="view_container"]/div/div/div[2]/div/div/div/'
+                        'form/span/section/div/div/div/div/ul/li[1]/div'
+                    )
+                )
             self.driver.get(url)
 
     def go_to_created_business(self):
