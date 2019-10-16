@@ -219,7 +219,8 @@ class FlowSelenium(BaseSelenium):
         content = self.get_text(By.TAG_NAME, 'body')
 
         if 'Enter code' in content:
-            return
+            self.entity.delete()
+            raise CredentialInvalid
 
         self.click_element(
             By.XPATH,
