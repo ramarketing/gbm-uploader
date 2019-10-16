@@ -79,10 +79,11 @@ class FlowSelenium(BaseSelenium):
                 self.click_element(
                     By.XPATH,
                     (
-                        '//*[@id="view_container"]/div/div/div[2]/div/div/div/'
-                        'form/span/section/div/div/div/div/ul/li[1]/div'
+                        '//*[@id="view_container"]/div/div/div[2]/div/div/'
+                        'div/form/span/section/div/div/div/div/ul/li[1]/div'
                     )
                 )
+                self._wait(3)
             self.driver.get(url)
 
     def go_to_created_business(self):
