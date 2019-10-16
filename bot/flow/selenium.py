@@ -29,6 +29,9 @@ class FlowSelenium(BaseSelenium):
             self.code.person['first_name'],
             ' '.join(name.split(' ')[1:])
         )
+        names = [
+            'company '
+        ]
         self.do_name(name)
         self.do_phone(self.code.person['phone'])
         self.open_verification_tab()
@@ -213,7 +216,15 @@ class FlowSelenium(BaseSelenium):
             self.entity.delete()
             raise CredentialInvalid
 
-        return 'Postcard by mail' not in content
+        button = self.get_element(
+            By.XPATH,
+            (
+                '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div/div[2]/div/div/div/div[1]/div/div[2]/button'
+            ),
+            raise_exception=False,
+            max_retries=3
+        )
+        return True if button else False
 
     def request_code(self):
         content = self.get_text(By.TAG_NAME, 'body')
