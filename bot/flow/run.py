@@ -1,6 +1,7 @@
 from time import sleep
 from threading import Thread
 
+from selenium.common.exceptions import TimeoutException
 from .selenium import FlowSelenium
 from .service import AccountService, CodeService, GMBService, LeadService
 from ..base.exceptions import CredentialInvalid, GBMException
@@ -55,6 +56,8 @@ def run_thread_list(*args, **kwargs):
                 lead.patch(status=STATUS_DENY)
             except CredentialInvalid:
                 account.path(is_active=False)
+            except TimeoutException:
+                pass
 
             instance.quit_driver()
 
