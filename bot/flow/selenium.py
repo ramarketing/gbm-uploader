@@ -1,3 +1,5 @@
+import random
+
 import phonenumbers
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -29,11 +31,11 @@ class FlowSelenium(BaseSelenium):
             self.code.person['first_name'],
             ' '.join(name.split(' ')[1:])
         )
-        name_list = [
+        name_list = random.shuffle([
             '{} carpet cleaning',
             '{} mechanic shop',
             '{} barber shop'
-        ]
+        ])
 
         self.do_name(name)
         self.do_phone(self.code.person['phone'])
