@@ -12,19 +12,34 @@ from ..logger import Logger
 logging = Logger()
 
 
-class BaseEntity:
-    def __init__(self, service, data):
+class Entity:
+    def __eq__(self, other):
+        return False
+
+    def __init__(self, data):
         assert isinstance(data, dict), (
             "%s Data must be a dict instance." % self.__class__.__name__
         )
-        self.service = service
         self.raw_data = data
 
     def __getattr__(self, name):
         try:
-            return self.raw_data[name]
+            value = self.raw_data[name]
+            if isinstance(value, dict):
+                return Entity(value)
+            else:
+                return value
         except (KeyError, IndexError):
             return self.__getattribute__(name)
+
+
+class BaseEntity(Entity):
+    def __eq__(self, other):
+        return self.pk == other.pk
+
+    def __init__(self, service, data):
+        super().__init__(data)
+        self.service = service
 
     def delete(self):
         return self.service.request('delete', pk=self.pk)

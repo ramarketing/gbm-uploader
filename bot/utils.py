@@ -1,4 +1,7 @@
 import os
+import random
+
+import homoglyphs as hg
 import requests
 
 from . import config
@@ -23,3 +26,25 @@ def save_image_from_url(url, name):
     file.write(response.content)
     file.close()
     return path
+
+
+def permute_characters(text, replaces=3):
+    chars = list(set([c for c in text.replace(' ', '')]))
+    for i in range(0, replaces):
+        old_char = random.choice(chars)
+        if isinstance(old_char, tuple):
+            continue
+        new_char = random.choice(
+            hg.Homoglyphs().get_combinations(old_char)
+        )
+        chars.pop(chars.index(old_char))
+        chars.append((old_char, new_char))
+    chars_map = []
+    for c in chars:
+        if isinstance(c, tuple):
+            chars_map.append(c)
+        else:
+            chars_map.append((c, c))
+    for old_char, new_char in chars_map:
+        text = text.replace(old_char, new_char)
+    return text

@@ -1,5 +1,6 @@
 openpyxl
 python-dotenv
+homoglyphs
 phonenumbers
 requests
 selenium

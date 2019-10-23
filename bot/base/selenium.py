@@ -149,8 +149,11 @@ class BaseSelenium:
         element = source.find_element(by, selector)
         element.clear()
 
-    def do_login(self, credential):
-        self.driver.get('https://business.google.com/locations')
+    def do_login(self, credential, url=None):
+        url = url or 'https://business.google.com/locations'
+        final_url = url.split('.com')[0]
+
+        self.driver.get(url)
         self.fill_input(
             By.ID,
             ('identifierId', 'Email'),
@@ -165,7 +168,7 @@ class BaseSelenium:
 
         self._wait(3)
         success = self.driver.current_url.startswith(
-            'https://business.google'
+            url.split('.com')[0]
         )
         if success:
             return
@@ -212,7 +215,7 @@ class BaseSelenium:
 
         self._wait(3)
         success = self.driver.current_url.startswith(
-            'https://business.google'
+            final_url
         )
         if not success:
             raise CredentialInvalid(

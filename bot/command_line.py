@@ -4,6 +4,7 @@ from .flow.run import run as flow_bot
 from .maps.run import run as maps_bot
 from .uploader.run import run as uploader_bot
 from .renamer.run import run as renamer_bot
+from .postcard.run import run as postcard_bot
 
 
 def main(*args, **kwargs):
@@ -17,6 +18,8 @@ def main(*args, **kwargs):
         run = uploader_bot
     elif bot == 'maps':
         run = maps_bot
+    elif bot == 'postcard':
+        run = postcard_bot
     else:
         raise NotImplementedError(
             "Invalid bot. \"%s\" doesn't exists." % bot
