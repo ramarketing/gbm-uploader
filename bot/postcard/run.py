@@ -25,6 +25,6 @@ def run(*args, **kwargs):
                 if obj.recipient:
                     obj.patch(status='requested')
                 else:
-                    obj.path(status='created')
+                    obj.patch(status='created')
             except MaxRetries:
                 obj.patch(status='not-created')
