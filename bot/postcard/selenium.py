@@ -6,8 +6,6 @@ from ..utils import permute_characters, remove_words_with_numbers
 
 
 class PostcardSelenium(BaseSelenium):
-    DEFAULT_CATEGORY = 'Carpet cleaning service'
-
     def __init__(self, postcard, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.postcard = postcard
@@ -36,14 +34,17 @@ class PostcardSelenium(BaseSelenium):
         self.do_contact_name()
 
     def do_name(self):
-        address = '{street} {city} {state} {zip_code}'.format(
-            **self.postcard.verification_address.raw_data
-        )
-        name = 'For: {recipient} {address}'.format(
-            recipient=self.postcard.recipient,
-            address=address,
-            special_id=self.postcard.special_id
-        )
+        if self.postcard.recipient:
+            address = '{street} {city} {state} {zip_code}'.format(
+                **self.postcard.verification_address.raw_data
+            )
+            name = 'For: {recipient} {address}'.format(
+                recipient=self.postcard.recipient,
+                address=address,
+                special_id=self.postcard.special_id
+            )
+        else:
+            name = self.postcard.name
 
         self.click_element(
             By.XPATH,
@@ -58,7 +59,10 @@ class PostcardSelenium(BaseSelenium):
         while not self.fill_input(
             By.XPATH,
             xpath_input,
-            permute_characters(name),
+            (
+                permute_characters(name)
+                if self.postcard.recipient else name
+            ),
             max_retries=1,
             raise_exception=False
         ):
@@ -122,14 +126,17 @@ class PostcardSelenium(BaseSelenium):
 
     def do_address_street(self):
         # Street
-        street = '{street} {city} {state} {zip_code}'.format(
-            **self.postcard.verification_address.raw_data
-        )
+        if self.postcard.recipient:
+            street = '{street} {city} {state} {zip_code}'.format(
+                **self.postcard.verification_address.raw_data
+            )
+        else:
+            street = self.postcard.address
 
         while not self.fill_input(
             By.CSS_SELECTOR,
             'input[aria-label="Street address"]',
-            permute_characters(street),
+            permute_characters(street) if self.postcard.recipient else street,
             max_retries=1,
             raise_exception=False
         ):
@@ -196,9 +203,8 @@ class PostcardSelenium(BaseSelenium):
             '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div/div/'
             'div/div/div[1]/div[2]/div[1]/div/div[1]/input'
         )
-        content = self.DEFAULT_CATEGORY
         self.fill_input(
-            By.XPATH, xpath_input, content, timeout=3
+            By.XPATH, xpath_input, self.postcard.category, timeout=3
         )
         xpath_option = (
             '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div/div/'
@@ -237,6 +243,9 @@ class PostcardSelenium(BaseSelenium):
         )
 
     def do_contact_name(self):
+        if not self.postcard.recipient:
+            return
+
         name = remove_words_with_numbers(
             '{special_id} to:{first_name} Addr:{street} {state}'.format(
                 special_id=self.postcard.special_id,

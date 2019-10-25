@@ -17,11 +17,14 @@ def run(*args, **kwargs):
         next_ = True if object_list.next else False
 
         for obj in object_list:
-            if not obj.verification_address:
+            if not obj.verification_address and not obj.name:
                 continue
             obj.patch(status='creating')
             try:
                 PostcardSelenium(postcard=obj)
-                obj.patch(status='requested')
+                if obj.recipient:
+                    obj.patch(status='requested')
+                else:
+                    obj.path(status='created')
             except MaxRetries:
                 obj.patch(status='not-created')
