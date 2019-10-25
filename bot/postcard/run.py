@@ -1,3 +1,5 @@
+from time import sleep
+
 from .selenium import PostcardSelenium
 from .service import PostcardService
 from ..base .exceptions import MaxRetries
@@ -32,3 +34,4 @@ def run(*args, **kwargs):
 
         object_list = None
         next_ = True
+        sleep(10)
