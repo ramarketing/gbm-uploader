@@ -17,21 +17,25 @@ class PostcardSelenium(BaseSelenium):
         self.do_login(
             self.postcard.account, url='https://business.google.com/create'
         )
-        self.do_name()
-        self.do_can_visit()
-        self.do_address_country()
-        self.do_address_state()
-        self.do_address_state(raise_exception=False)
-        self.do_address_zip_code()
-        self.do_address_city()
-        self.do_address_street()
-        self.do_map()
-        self.do_can_visit()
-        self.do_service_area()
-        self.do_category()
-        self.do_phone()
-        self.do_finish()
-        self.do_contact_name()
+        try:
+            self.do_name()
+            self.do_can_visit()
+            self.do_address_country()
+            self.do_address_state()
+            self.do_address_state(raise_exception=False)
+            self.do_address_zip_code()
+            self.do_address_city()
+            self.do_address_street()
+            self.do_map()
+            self.do_can_visit()
+            self.do_service_area()
+            self.do_category()
+            self.do_phone()
+            self.do_finish()
+            self.do_contact_name()
+        except Exception:
+            self._start_debug()
+            raise MaxRetries
 
     def do_name(self):
         if self.postcard.recipient:
