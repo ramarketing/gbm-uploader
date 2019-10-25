@@ -20,6 +20,8 @@ from ..logger import Logger
 
 
 class BaseSelenium:
+    WAIT_BEFORE_NEXT = 3
+
     def __init__(self, *args, **kwargs):
         self.logger = Logger()
 

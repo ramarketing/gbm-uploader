@@ -1,5 +1,6 @@
 import os
 import random
+import re
 
 import homoglyphs as hg
 import requests
@@ -28,7 +29,7 @@ def save_image_from_url(url, name):
     return path
 
 
-def permute_characters(text, replaces=3):
+def permute_characters(text, replaces=2):
     chars = list(set([c for c in text.replace(' ', '')]))
     for i in range(0, replaces):
         old_char = random.choice(chars)
@@ -48,3 +49,10 @@ def permute_characters(text, replaces=3):
     for old_char, new_char in chars_map:
         text = text.replace(old_char, new_char)
     return text
+
+
+def remove_words_with_numbers(text):
+    words = text.split()
+    return ' '.join([
+        w for w in words if not re.findall(r'.*[0-9].*', w)
+    ])
