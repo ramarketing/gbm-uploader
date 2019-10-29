@@ -83,7 +83,6 @@ class PostcardSelenium(BaseSelenium):
         content = self.get_text(By.TAG_NAME, 'body')
         xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
 
-            options = self.get_elements(
         options = self.get_elements(
             By.XPATH,
             '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div/'
