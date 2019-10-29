@@ -11,6 +11,7 @@ class PostcardSelenium(BaseSelenium):
         self.postcard = postcard
         try:
             self.handle()
+            self.quit_driver()
         except Exception:
             self.quit_driver()
             raise
@@ -266,6 +267,8 @@ class PostcardSelenium(BaseSelenium):
         self.click_element(
             By.XPATH, '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
         )
+        if not self.postcard.recipient:
+            self._wait(10)
 
     def do_contact_name(self):
         if not self.postcard.recipient:
