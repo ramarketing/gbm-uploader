@@ -2,7 +2,7 @@ from time import sleep
 
 from .selenium import PostcardSelenium
 from .service import PostcardService
-from ..base .exceptions import MaxRetries
+from ..base .exceptions import CredentialInvalid, MaxRetries
 
 
 def run(*args, **kwargs):
@@ -31,6 +31,8 @@ def run(*args, **kwargs):
                         obj.patch(status='created')
                 except MaxRetries:
                     obj.patch(status='not-created')
+                except CredentialInvalid:
+                    continue
 
         object_list = None
         next_ = True
