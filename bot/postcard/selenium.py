@@ -81,19 +81,20 @@ class PostcardSelenium(BaseSelenium):
 
     def do_can_visit(self):
         content = self.get_text(By.TAG_NAME, 'body')
+        options = self.get_elements(
+            By.XPATH,
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div/'
+            'span/label'
+        )
+        xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
 
         if 'Is this your business' in content:
-            import pdb
-            pdb.set_trace()
+            options[-1].click()
+            self.click_element(By.XPATH, xpath, timeout=3)
+            self.do_can_visit()
         else:
-            xpath = (
-                '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/'
-                'div[1]/div'
-            )
-        self.click_element(By.XPATH, xpath, timeout=3)
-
-        xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
-        self.click_element(By.XPATH, xpath, timeout=3)
+            options[0].click()
+            self.click_element(By.XPATH, xpath, timeout=3)
 
     def do_address_city(self):
         # City
