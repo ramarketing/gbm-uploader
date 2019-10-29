@@ -9,8 +9,11 @@ class PostcardSelenium(BaseSelenium):
     def __init__(self, postcard, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.postcard = postcard
-        self.handle()
-        self.quit_driver()
+        try:
+            self.handle()
+        except Exception:
+            self.quit_driver()
+            raise
 
     def handle(self):
         self.driver = self.get_driver(size=(1200, 700))
