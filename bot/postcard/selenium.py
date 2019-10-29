@@ -1,3 +1,4 @@
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
 from ..base.selenium import BaseSelenium
@@ -81,12 +82,22 @@ class PostcardSelenium(BaseSelenium):
 
     def do_can_visit(self):
         content = self.get_text(By.TAG_NAME, 'body')
-        options = self.get_elements(
-            By.XPATH,
-            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div/'
-            'span/label'
-        )
         xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
+
+        try:
+            options = self.get_elements(
+                By.XPATH,
+                '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div/'
+                'span/label'
+            )
+        except TimeoutException:
+            self.click_element(
+                By.XPATH,
+                '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/'
+                'div[1]/div'
+            )
+            self.click_element(By.XPATH, xpath, timeout=3)
+            return
 
         if 'Is this your business' in content:
             options[-1].click()
