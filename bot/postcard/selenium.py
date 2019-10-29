@@ -1,4 +1,3 @@
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
 from ..base.selenium import BaseSelenium
@@ -84,13 +83,14 @@ class PostcardSelenium(BaseSelenium):
         content = self.get_text(By.TAG_NAME, 'body')
         xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
 
-        try:
             options = self.get_elements(
-                By.XPATH,
-                '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div/'
-                'span/label'
-            )
-        except TimeoutException:
+        options = self.get_elements(
+            By.XPATH,
+            '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div/'
+            'span/label',
+            raise_exception=False
+        )
+        if not options:
             self.click_element(
                 By.XPATH,
                 '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/'
