@@ -32,7 +32,7 @@ def run(*args, **kwargs):
                 except MaxRetries:
                     obj.patch(status='not-created')
                 except CredentialInvalid:
-                    continue
+                    obj.patch(status='not-created')
 
         object_list = None
         next_ = True
