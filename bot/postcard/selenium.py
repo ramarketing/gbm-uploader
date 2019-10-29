@@ -80,14 +80,15 @@ class PostcardSelenium(BaseSelenium):
         self.click_element(By.XPATH, xpath, timeout=3)
 
     def do_can_visit(self):
-        content = self.get_text(By.TAG_NAME, 'body')
+        content = self.get_text(By.TAG_NAME, 'body', timeout=3)
         xpath = '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[3]/div[1]'
 
         options = self.get_elements(
             By.XPATH,
             '//*[@id="yDmH0d"]/c-wiz/c-wiz/div/div[1]/div[2]/div/div[1]/div/'
             'span/label',
-            raise_exception=False
+            raise_exception=False,
+            max_retries=5
         )
         if not options:
             self.click_element(
