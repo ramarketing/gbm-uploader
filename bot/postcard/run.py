@@ -1,5 +1,7 @@
 from time import sleep
 
+from selenium.common.exceptions import ElementClickInterceptedException
+
 from .selenium import PostcardSelenium
 from .service import PostcardService
 from ..base .exceptions import CredentialInvalid, MaxRetries
@@ -29,7 +31,7 @@ def run(*args, **kwargs):
                         obj.patch(status='requested')
                     else:
                         obj.patch(status='created')
-                except MaxRetries:
+                except (MaxRetries, ElementClickInterceptedException):
                     obj.patch(status='not-created')
                 except CredentialInvalid:
                     obj.patch(status='denied')
