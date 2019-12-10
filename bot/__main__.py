@@ -1,6 +1,7 @@
 import sys
 
 from flow.run import run as flow_bot
+from login.run import run as login_bot
 from maps.run import run as maps_bot
 from uploader.run import run as uploader_bot
 from renamer.run import run as renamer_bot
@@ -12,6 +13,8 @@ if __name__ == '__main__':
 
     if bot == 'flow':
         run = flow_bot
+    elif bot == 'login':
+        run = login_bot
     elif bot == 'renamer':
         run = renamer_bot
     elif bot == 'uploader':
