@@ -13,8 +13,9 @@ class PostcardSelenium(BaseSelenium):
             self.handle()
             self.quit_driver()
         except Exception:
+            self._start_debug()
+        finally:
             self.quit_driver()
-            raise
 
     def handle(self):
         self.driver = self.get_driver(size=(1200, 700))
