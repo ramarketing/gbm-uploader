@@ -12,7 +12,8 @@ class PostcardSelenium(BaseSelenium):
         try:
             self.handle()
             self.quit_driver()
-        except Exception:
+        except Exception as err:
+            print(err)
             self._start_debug()
         finally:
             self.quit_driver()

@@ -1,4 +1,5 @@
 ACTION_LOGIN = 'login'
+ACTION_CREATE = 'create'
 ACTION_PATCH = 'patch'
 
 STATUS_PENDING = 'pending'

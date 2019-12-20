@@ -36,7 +36,10 @@ class GMBTaskSelenium(BaseSelenium):
             self.click_permit()
             self.click_sync()
 
-        if self.gmbtask.action == constants.ACTION_PATCH:
+        if self.gmbtask.action in (
+            constants.ACTION_PATCH,
+            constants.ACTION_CREATE
+        ):
             self.gmbtask.patch(status=constants.STATUS_WAITING)
         else:
             self.gmbtask.patch(status=constants.STATUS_COMPLETE)
