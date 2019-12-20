@@ -1,20 +1,30 @@
+from concurrent.futures import ThreadPoolExecutor
 from json.decoder import JSONDecodeError
 from time import sleep
+from threading import Thread
 
 from .selenium import GMBTaskSelenium
 from .service import GMBTaskService
 from . import constants
 
 
-def _run(object_list):
+def _run_object(obj):
+    obj.patch(status=constants.STATUS_RUNNING)
+    try:
+        GMBTaskSelenium(gmbtask=obj)
+    except Exception as err:
+        obj.patch(
+            status=constants.STATUS_FAIL, status_message=str(err)
+        )
+
+
+def _run_object_list(object_list):
+    executor = ThreadPoolExecutor(max_workers=3)
+    futures = []
+
     for obj in object_list:
-        obj.patch(status=constants.STATUS_RUNNING)
-        try:
-            GMBTaskSelenium(gmbtask=obj)
-        except Exception as err:
-            obj.patch(
-                status=constants.STATUS_FAIL, status_message=str(err)
-            )
+        a = executor.submit(_run_object, obj)
+        futures.append(a)
 
 
 def run(*args, **kwargs):
@@ -31,7 +41,7 @@ def run(*args, **kwargs):
                     object_list.get_next_page()
 
                 next_ = True if object_list.next else False
-                _run(object_list)
+                _run_object_list(object_list)
             except JSONDecodeError:
                 print('Connection error, waiting 5 seconds.')
                 sleep(5)
