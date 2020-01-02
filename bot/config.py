@@ -39,4 +39,4 @@ STATUS_APPROVED = os.getenv('STATUS_APPROVED', 34)
 
 STATUS_DENY = os.getenv('STATUS_DENY', 35)
 
-WORKERS = os.getenv('WORKERS', 1)
+WORKERS = int(os.getenv('WORKERS', 1))
