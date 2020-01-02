@@ -5,6 +5,7 @@ from threading import Thread
 
 from .selenium import GMBTaskSelenium
 from .service import GMBTaskService
+from .. import config
 from . import constants
 
 
@@ -19,7 +20,7 @@ def _run_object(obj):
 
 
 def _run_object_list(object_list):
-    executor = ThreadPoolExecutor(max_workers=3)
+    executor = ThreadPoolExecutor(max_workers=config.WORKERS)
     futures = []
 
     for obj in object_list:
