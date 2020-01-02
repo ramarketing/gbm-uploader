@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from json.decoder import JSONDecodeError
 from time import sleep
-from threading import Thread
 
 from .selenium import GMBTaskSelenium
 from .service import GMBTaskService
@@ -24,8 +23,11 @@ def _run_object_list(object_list):
     futures = []
 
     for obj in object_list:
-        a = executor.submit(_run_object, obj)
-        futures.append(a)
+        if config.WORKERS > 1:
+            a = executor.submit(_run_object, obj)
+            futures.append(a)
+        else:
+            _run_object(obj)
 
 
 def run(*args, **kwargs):
