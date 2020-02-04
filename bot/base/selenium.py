@@ -42,7 +42,9 @@ class BaseSelenium:
                 executable_path=os.path.join(config.BASE_DIR, 'chromedriver')
             )
         else:
-            driver = webdriver.PhantomJS()
+            options = Options()
+            options.add_argument('--headless')
+            driver = webdriver.Firefox()
 
         if size:
             try:
