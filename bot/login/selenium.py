@@ -54,6 +54,7 @@ class GMBTaskSelenium(BaseSelenium):
         self.fill_input(
             By.ID, 'id_password', config.API_PASSWORD + Keys.RETURN
         )
+        self._wait(3)
 
     def go_to_accounts(self):
         url = config.API_ROOT.split('/')
