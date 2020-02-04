@@ -66,11 +66,13 @@ class GMBTaskSelenium(BaseSelenium):
         )
 
     def login_google(self):
+        self._wait(3)
         self.fill_input(
             By.ID,
             ('identifierId', 'Email'),
             self.gmbtask.account.username + Keys.RETURN
         )
+        self._wait(3)
         self.fill_input(
             By.NAME,
             ('password', 'Passwd'),
