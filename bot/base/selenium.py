@@ -29,24 +29,20 @@ class BaseSelenium:
         if hasattr(self, 'driver') and self.driver:
             return self.driver
 
-        options = Options()
-        options.add_argument('disable-infobars')
-        options.add_argument('disable-extensions')
-        options.add_argument('profile-directory=Default')
-        options.add_argument('incognito')
-        options.add_argument('disable-plugins-discovery')
-        # options.add_argument('headless')
-        # options.add_argument(f'user-agent={user_agent}')
-
         if platform.system() == 'Windows':
+            options = Options()
+            options.add_argument('disable-infobars')
+            options.add_argument('disable-extensions')
+            options.add_argument('profile-directory=Default')
+            options.add_argument('incognito')
+            options.add_argument('disable-plugins-discovery')
+
             driver = webdriver.Chrome(
                 chrome_options=options,
                 executable_path=os.path.join(config.BASE_DIR, 'chromedriver')
             )
         else:
-            driver = webdriver.Chrome(
-                chrome_options=options
-            )
+            driver = webdriver.Firefox()
 
         if size:
             try:
