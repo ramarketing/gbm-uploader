@@ -19,15 +19,19 @@ def _run_object(obj):
 
 
 def _run_object_list(object_list):
-    executor = ThreadPoolExecutor(max_workers=config.WORKERS)
-    futures = []
-
-    for obj in object_list:
-        if config.WORKERS > 1:
-            a = executor.submit(_run_object, obj)
-            futures.append(a)
-        else:
+    if config.DEBUG:
+        for obj in object_list:
             _run_object(obj)
+    else:
+        executor = ThreadPoolExecutor(max_workers=config.WORKERS)
+        futures = []
+
+        for obj in object_list:
+            if config.WORKERS > 1:
+                a = executor.submit(_run_object, obj)
+                futures.append(a)
+            else:
+                _run_object(obj)
 
 
 def run(*args, **kwargs):
