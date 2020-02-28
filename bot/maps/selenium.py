@@ -1,4 +1,6 @@
 import csv
+from datetime import datetime
+import os
 import re
 
 from selenium.webdriver.common.by import By
@@ -8,10 +10,9 @@ from ..base.selenium import BaseSelenium
 
 
 class MapsSelenium(BaseSelenium):
-    def __init__(self, cid, file=None, *args, **kwargs):
+    def __init__(self, cid, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cid = cid
-        self.file = file
         self.city = None
         self.state = None
         self.zip_code = None
@@ -41,6 +42,8 @@ class MapsSelenium(BaseSelenium):
                 'mid': self.get_mid_for_result(),
             }
         else:
+            from .run import slugify
+
             self.driver.get('https://maps.google.com/')
             self.do_search()
 
@@ -57,7 +60,6 @@ class MapsSelenium(BaseSelenium):
                     'city section': '',
                     'map neighborhood url': link,
                     'streetview url': gs360,
-                    'search string url': ''
                 }
                 response.append(obj)
                 break
@@ -65,14 +67,37 @@ class MapsSelenium(BaseSelenium):
             for place in response:
                 link = place['map neighborhood url']
                 mid = self.get_mid_for_result(link)
-                driving = self.get_driving_directions_for_result(link)
+                driving = self.get_driving_directions_for_result()
                 place['machine id'] = mid
                 place['driving directions url'] = driving
 
-            writer = csv.DictWriter(self.file, fieldnames=response[0].keys())
+                if all([self.cid['mid'], place['machine id']]):
+                    place['search string url'] = (
+                        'https://google.com/search?q='
+                        + slugify(self.cid['name']).replace('-', '+')
+                        + '+'
+                        + slugify(self.cid['metro area']).replace('-', '+')
+                        + '+'
+                        + slugify(self.cid['state']).replace('-', '+')
+                        + '&kponly'
+                        + f'&kgmif={self.cid["mid"]}'
+                        + f'&kgmid={place["machine id"]}'
+                    )
+                else:
+                    place['search string url'] = ''
+
+            now = datetime.now()
+            filename = now.strftime(
+                f'{slugify(self.cid["name"])}-%Y-%M-%d-%H-%M-%S.csv'
+            )
+            file = open(os.path.join(os.getcwd(), filename), 'w+')
+
+            writer = csv.DictWriter(file, fieldnames=response[0].keys())
             writer.writeheader()
             for place in response:
                 writer.writerow(place)
+
+            file.close()
 
     def get_cid_name(self):
         return self.get_text(
@@ -124,9 +149,11 @@ class MapsSelenium(BaseSelenium):
 
     def get_mid_for_result(self, link=None):
         source = self.get_source(link=link)
-        mid = re.search(r'"\/?(g|m)\/.{8,12}"', source)
+        mid = re.search(r'"\/?(g|m)\/.{5,12}"', source)
         if mid:
             mid = mid.group(0)[1:-1]
+        if mid.endswith('\\'):
+            mid = mid[:-1]
         return mid
 
     def get_share_link_for_result(self, result):
@@ -210,14 +237,12 @@ class MapsSelenium(BaseSelenium):
             'button.widget-directions-reverse'
         )
         self._wait(5)
+
         self.click_element(
-            By.CSS_SELECTOR,
-            (
-                '[jsaction="settings.open;mouseover:omnibox.showTooltip;'
-                'mouseout:omnibox.hideTooltip;focus:omnibox.showTooltip;'
-                'blur:omnibox.hideTooltip"]'
-            )
+            By.XPATH,
+            '//*[@id="omnibox-directions"]/div/div[1]/button'
         )
+
         self._wait(2)
         self.click_element(
             By.CSS_SELECTOR,
@@ -232,6 +257,6 @@ class MapsSelenium(BaseSelenium):
     def get_source(self, link=None):
         if link:
             self.driver.get(link)
-            self._wait(3)
+            self._wait(5)
         element = self.get_element(By.TAG_NAME, 'html')
         return element.get_attribute('innerHTML')

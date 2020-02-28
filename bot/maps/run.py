@@ -1,5 +1,4 @@
 import csv
-from datetime import datetime
 import os
 import re
 
@@ -19,8 +18,6 @@ def slugify(value):
 
 
 def run(*args, **kwargs):
-    now = datetime.now()
-
     filename = kwargs.get('--file', None)
     if filename is None:
         print('--file attribute is required.')
@@ -38,9 +35,10 @@ def run(*args, **kwargs):
     cid_updated = []
     for cid in cid_list:
         selenium = MapsSelenium(cid=cid)
-        cid_updated.append(
-            selenium()
-        )
+        if cid['name']:
+            cid_updated.append(cid)
+        else:
+            cid_updated.append(selenium())
 
     source.seek(0)
     writer = csv.DictWriter(source, fieldnames=cid_updated[0].keys())
@@ -51,10 +49,5 @@ def run(*args, **kwargs):
     source.close()
 
     for cid in cid_updated:
-        filename = now.strftime(
-            f'{slugify(cid["name"])}-%Y-%M-%d-%H-%M-%S.csv'
-        )
-        file = open(os.path.join(os.getcwd(), filename), 'w+')
-        selenium = MapsSelenium(cid=cid, file=file)
+        selenium = MapsSelenium(cid=cid)
         selenium()
-        file.close()
