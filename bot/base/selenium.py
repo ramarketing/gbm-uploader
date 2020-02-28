@@ -41,10 +41,11 @@ class BaseSelenium:
                 chrome_options=options,
                 executable_path=os.path.join(config.BASE_DIR, 'chromedriver')
             )
+
         else:
             options = Options()
             options.add_argument('--headless')
-            driver = webdriver.Firefox()
+            driver = webdriver.Chrome()
 
         if size:
             try:
