@@ -5,6 +5,7 @@ from login.run import run as login_bot
 from maps.run import run as maps_bot
 from uploader.run import run as uploader_bot
 from renamer.run import run as renamer_bot
+from porch.run import run as porch_bot
 from postcard.run import run as postcard_bot
 
 
@@ -21,6 +22,8 @@ if __name__ == '__main__':
         run = uploader_bot
     elif bot == 'maps':
         run = maps_bot
+    elif bot == 'porch':
+        run = porch_bot
     elif bot == 'postcard':
         run = postcard_bot
     else:

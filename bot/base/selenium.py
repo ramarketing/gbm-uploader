@@ -44,8 +44,10 @@ class BaseSelenium:
 
         else:
             options = Options()
-            options.add_argument('--headless')
-            driver = webdriver.Chrome()
+            # options.add_argument('--headless')
+            options.add_argument('user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Safari/605.1.15')
+
+            driver = webdriver.Chrome(chrome_options=options)
 
         if size:
             try:

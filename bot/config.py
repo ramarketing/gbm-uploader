@@ -23,6 +23,14 @@ API_USERNAME = os.getenv('API_USERNAME', '')
 API_PASSWORD = os.getenv('API_PASSWORD', '')
 
 
+HA_USERNAME = os.getenv('HA_USERNAME', '')
+
+HA_PASSWORD = os.getenv('HA_PASSWORD', '')
+
+HA_AIRTABLE = os.getenv('HA_AIRTABLE', '')
+
+HA_AIRTABLE_KEY = os.getenv('HA_AIRTABLE_KEY', '')
+
 CAPTCHA_USERNAME = os.getenv('CAPTCHA_USERNAME')
 
 CAPTCHA_PASSWORD = os.getenv('CAPTCHA_PASSWORD')
