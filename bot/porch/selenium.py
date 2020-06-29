@@ -74,6 +74,7 @@ class PorchSelenium(BaseSelenium):
             'consumerEveningPhone',
             'consumerCellPhone',
             'taskDescription',
+            'srComments',
             'token',
             'preciseLatitude',
             'preciseLongitude',
