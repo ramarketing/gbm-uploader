@@ -40,7 +40,7 @@ class BaseSelenium:
 
             driver = webdriver.Chrome(
                 chrome_options=options,
-                executable_path=os.path.join(config.BASE_DIR, 'chromedriver')
+                executable_path=os.path.join(os.path.normpath(os.getcwd()), 'chromedriver.exe')
             )
 
         else:

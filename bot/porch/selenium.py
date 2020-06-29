@@ -86,10 +86,15 @@ class PorchSelenium(BaseSelenium):
             except KeyError:
                 continue
 
-        response['submitDateTime'] = '{year}-{month}-{day}'.format(
+        response['submitDateTime'] = (
+            '{year}-{month}-{day}T{hour}:{minute}:{second}.000Z'
+        ).format(
             year=content['submitDateTime']['year'],
             month=content['submitDateTime']['month'],
             day=content['submitDateTime']['dayOfMonth'],
+            hour=content['submitDateTime']['hour'],
+            minute=content['submitDateTime']['minute'],
+            second=content['submitDateTime']['second'],
         )
 
         return response
