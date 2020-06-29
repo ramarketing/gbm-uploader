@@ -36,10 +36,11 @@ class BaseSelenium:
             options.add_argument('profile-directory=Default')
             options.add_argument('incognito')
             options.add_argument('disable-plugins-discovery')
+            options.add_argument('user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Safari/605.1.15')
 
             driver = webdriver.Chrome(
                 chrome_options=options,
-                executable_path=os.path.join(config.BASE_DIR, 'chromedriver')
+                executable_path=os.path.join(config.BASE_DIR, 'chromedriver.exe')
             )
 
         else:
