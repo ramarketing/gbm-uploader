@@ -1,12 +1,12 @@
 import sys
 
-from flow.run import run as flow_bot
-from login.run import run as login_bot
-from maps.run import run as maps_bot
-from uploader.run import run as uploader_bot
-from renamer.run import run as renamer_bot
-from porch.run import run as porch_bot
-from postcard.run import run as postcard_bot
+from .flow.run import run as flow_bot
+from .login.run import run as login_bot
+from .maps.run import run as maps_bot
+from .uploader.run import run as uploader_bot
+from .renamer.run import run as renamer_bot
+from .porch.run import run as porch_bot
+from .postcard.run import run as postcard_bot
 
 
 if __name__ == '__main__':
