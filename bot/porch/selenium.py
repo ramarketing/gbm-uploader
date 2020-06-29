@@ -79,11 +79,19 @@ class PorchSelenium(BaseSelenium):
             'preciseLongitude',
         ]
         response = {}
+
         for field in fields:
             try:
                 response[field] = content[field]
             except KeyError:
                 continue
+
+        response['submitDateTime'] = '{year}-{month}-{day}'.format(
+            year=content['submitDateTime']['year'],
+            month=content['submitDateTime']['month'],
+            day=content['submitDateTime']['dayOfMonth'],
+        )
+
         return response
 
     def send_to_airtable(self, content):
