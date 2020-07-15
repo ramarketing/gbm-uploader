@@ -74,6 +74,7 @@ class PorchSelenium(BaseSelenium):
             'consumerEveningPhone',
             'consumerCellPhone',
             'taskDescription',
+            'srComments',
             'token',
             'preciseLatitude',
             'preciseLongitude',
@@ -87,10 +88,10 @@ class PorchSelenium(BaseSelenium):
                 continue
 
         response['submitDateTime'] = (
-            '{year}-{month}-{day}T{hour}:{minute}:{second}.000Z'
+            '{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.000Z'
         ).format(
             year=content['submitDateTime']['year'],
-            month=content['submitDateTime']['month'],
+            month=content['submitDateTime']['monthValue'],
             day=content['submitDateTime']['dayOfMonth'],
             hour=content['submitDateTime']['hour'],
             minute=content['submitDateTime']['minute'],
@@ -103,6 +104,10 @@ class PorchSelenium(BaseSelenium):
         content = self.parse_content(content)
         url = config.HA_AIRTABLE
         content = dict(records=[dict(fields=content)])
-        requests.post(url, json=content, headers={
+        response = requests.post(url, json=content, headers={
             'Authorization': f'Bearer {config.HA_AIRTABLE_KEY}'
         })
+        if response.status_code >= 200 and response.status_code < 300:
+            return
+        import pdb
+        pdb.set_trace()
