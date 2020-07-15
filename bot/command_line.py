@@ -7,6 +7,7 @@ from .uploader.run import run as uploader_bot
 from .renamer.run import run as renamer_bot
 from .porch.run import run as porch_bot
 from .postcard.run import run as postcard_bot
+from .vfoflooring.run import run as vfo_bot
 
 
 def main(*args, **kwargs):
@@ -26,6 +27,8 @@ def main(*args, **kwargs):
         run = porch_bot
     elif bot == 'postcard':
         run = postcard_bot
+    elif bot == 'vfo':
+        run = vfo_bot
     else:
         raise NotImplementedError(
             "Invalid bot. \"%s\" doesn't exists." % bot
