@@ -41,10 +41,14 @@ class PorchSelenium(BaseSelenium):
         self._wait(5)
 
     def get_list_items(self):
-        elements = self.get_elements(
-            By.CSS_SELECTOR, '.lead-card-link'
-        )
+        elements = []
         response = []
+
+        while len(elements) == 0:
+            elements = self.get_elements(
+                By.CSS_SELECTOR, '.lead-card-link'
+            )
+
         for element in elements:
             link = element.get_attribute('href')
             link = link.replace('/opportunities/details/OL/', '/ols/lead/')
