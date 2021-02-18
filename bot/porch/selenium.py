@@ -23,8 +23,12 @@ class PorchSelenium(BaseSelenium):
     def handle(self):
         self.driver = self.get_driver(size=(1200, 700))
         self.do_login()
-        self.go_to_oportunities()
-        links = self.get_list_items()
+        links = []
+
+        while len(links) == 0:
+            self.go_to_oportunities()
+            links = self.get_list_items()
+
         for link in links:
             content = self.get_link_data(link)
             self.send_to_airtable(content)
@@ -43,11 +47,6 @@ class PorchSelenium(BaseSelenium):
     def get_list_items(self):
         elements = []
         response = []
-
-        while len(elements) == 0:
-            elements = self.get_elements(
-                By.CSS_SELECTOR, '.lead-card-link'
-            )
 
         for element in elements:
             link = element.get_attribute('href')
