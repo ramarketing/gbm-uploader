@@ -45,7 +45,7 @@ class PorchSelenium(BaseSelenium):
         self._wait(5)
 
     def get_list_items(self):
-        elements = []
+        elements = self.get_elements(By.CSS_SELECTOR, 'a.lead-card-link')
         response = []
 
         for element in elements:
@@ -106,6 +106,10 @@ class PorchSelenium(BaseSelenium):
     def send_to_airtable(self, content):
         content = self.parse_content(content)
         url = config.HA_AIRTABLE
+
+        if not url:
+            return
+
         content = dict(records=[dict(fields=content)])
         response = requests.post(url, json=content, headers={
             'Authorization': f'Bearer {config.HA_AIRTABLE_KEY}'
